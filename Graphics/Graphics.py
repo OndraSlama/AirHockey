@@ -39,7 +39,8 @@ class Graphics:
 		self.drawLine((STRIKER_AREA_WIDTH, FIELD_HEIGHT/2), (STRIKER_AREA_WIDTH, -FIELD_HEIGHT/2), GREY)
 		self.drawLine((FIELD_WIDTH - STRIKER_AREA_WIDTH, FIELD_HEIGHT/2), (FIELD_WIDTH - STRIKER_AREA_WIDTH, -FIELD_HEIGHT/2), GREY)
 
-
+	
+		
 	# def drawAxes(self, redRot, redPos, blueRot, bluePos):
 	#	 redAxisPositions = [80, 230, 530, 830]
 	#	 blueAxisPositions = [1210 - 80, 1210 - 230, 1210 - 530, 1210 - 830]
@@ -85,9 +86,29 @@ class Graphics:
 	#					 u2pY(bluePos[i] + dummy - dummyWidth/2), dummyThickness, dummyWidth]
 	#			 pygame.draw.rect(self.window, BLUE, rect, 1)
 
+	def drawCamera(self, pos):
+		pygame.gfxdraw.aacircle(self.window, u2pX(pos.x), u2pY(pos.y), u2pDist(PUCK_RADIUS), RED)
+
+	def drawHistory(self, history):
+		for pos in history:
+			self.drawCircle(pos, PUCK_RADIUS/10, YELLOW)
+
+	def drawStrategy(self, strategy, color = GREEN):
+		for puck in strategy.puckHistory:
+			
+			if puck.state == 3:
+				historyColor = RED
+			else:
+				historyColor = GREEN
+			self.drawCircle(puck.position, PUCK_RADIUS/10, historyColor)
+
+		if strategy.puck.state == 1:
+			for line in strategy.puck.trajectory:			
+				self.drawLine((line.start.x, line.start.y), (line.end.x, line.end.y), DIMMED_RED)
+
 	def drawPuck(self, pos):
-		self.drawLine((0, pos[1]), (FIELD_WIDTH, pos[1]), DIMMED_RED)
-		self.drawLine((pos[0], FIELD_HEIGHT/2), (pos[0], -FIELD_HEIGHT/2), DIMMED_RED)
+		self.drawLine((0, pos.y), (FIELD_WIDTH, pos.y), DIMMED_RED)
+		self.drawLine((pos.x, FIELD_HEIGHT/2), (pos.x, -FIELD_HEIGHT/2), DIMMED_RED)
 		self.drawCircle(pos, PUCK_RADIUS, RED)
 		self.drawCircle(pos, PUCK_RADIUS * 0.8, DIMMED_RED)
 		self.drawCircle(pos, PUCK_RADIUS * 0.7, RED)
@@ -101,7 +122,7 @@ class Graphics:
 
 	# def drawRealBall(self, pos):
 	#	 pygame.gfxdraw.aacircle(self.window, u2pX(
-	#		 pos[0]), u2pY(pos[1]), 18, YELLOW)
+	#		 pos.x), u2pY(pos.y), 18, YELLOW)
 
 	# def drawHistory(self, positions):
 	#	 for i in range(len(positions)):
@@ -140,8 +161,8 @@ class Graphics:
 	#	 rect = [u2pX(0), u2pY(703/2 + 10), 1210*portion, 15]
 	#	 pygame.draw.rect(self.window, CYAN, rect, 0)
 	def drawCircle(self, pos, rad, color):
-		pygame.gfxdraw.aacircle(self.window, u2pX(pos[0]), u2pY(pos[1]), u2pDist(rad), color)
-		pygame.gfxdraw.filled_circle(self.window, u2pX(pos[0]), u2pY(pos[1]), u2pDist(rad), color)
+		pygame.gfxdraw.aacircle(self.window, u2pX(pos.x), u2pY(pos.y), u2pDist(rad), color)
+		pygame.gfxdraw.filled_circle(self.window, u2pX(pos.x), u2pY(pos.y), u2pDist(rad), color)
 
 	def drawLine(self, startPos, endPos, color):
 		pygame.draw.aaline(self.window, color, (u2pX(startPos[0]), u2pY(startPos[1])), (u2pX(endPos[0]), u2pY(endPos[1])))

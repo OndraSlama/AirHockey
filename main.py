@@ -1,12 +1,13 @@
 import pygame
-from Graphics import Graphics
+from Graphics.Graphics import Graphics
 from Constants import *
 from Simulation import Simulation
+from Game.Game import Game
 # Init phase
 pygame.init()
 clock = pygame.time.Clock()
-graphics = Graphics.Graphics(WIDTH, HEIGHT)
-sim = Simulation.Simulation()
+graphics = Graphics(WIDTH, HEIGHT)
+game = Game()
 
 # Loop variables
 lastTextUpdate = 0
@@ -20,12 +21,12 @@ while running:
 	realTime = pygame.time.get_ticks()	
 	currentFps = clock.get_fps()
 	if not (currentFps == 0):
-		sim.stepTime = min(1/currentFps, 0.02)
+		stepTime = min(1/currentFps, 0.02)
 	else:
-		sim.stepTime = 0.02
+		stepTime = 0.02
 
 	if gameSpeed < 1:
-		sim.stepTime *= gameSpeed
+		stepTime *= gameSpeed
 
 	# ----------------- EVENTS --------------------
 	for event in pygame.event.get():
@@ -70,9 +71,9 @@ while running:
 # --------------------- GAME --------------------------
 
 	for i in range(max(1, gameSpeed)):
-		if leftMouseDown: sim.leftMouseDown(pygame.mouse.get_pos())
-		if rightMouseDown: sim.rightMouseDown(pygame.mouse.get_pos())
-		sim.step()
+		if leftMouseDown: game.simulation.leftMouseDown(pygame.mouse.get_pos())
+		if rightMouseDown: game.simulation.rightMouseDown(pygame.mouse.get_pos())
+		game.update(stepTime)
 	
 
 # ------------------- GRAPHICS ------------------------
@@ -80,9 +81,13 @@ while running:
 
 	# Draw game 
 	graphics.drawField()
-	graphics.drawPuck([sim.puck.position.x, sim.puck.position.y])
-	for striker in sim.strikers:
-		graphics.drawStriker([striker.position.x, striker.position.y], GREY)
+	graphics.drawPuck(game.simulation.puck.position)
+	graphics.drawCamera(game.camera.puckPosition)
+	graphics.drawHistory(game.camera.positionHistory)
+	graphics.drawStrategy(game.leftStrategy)
+
+	for striker in game.simulation.strikers:
+		graphics.drawStriker(striker.position, GREY)
 		
 
 	# Render text
@@ -95,9 +100,11 @@ while running:
 
 		graphics.createText(".........................................", line=6, alignment="center")
 		graphics.createText("FPS: " + str(round(currentFps, 2)), line=8)
-		graphics.createText("Step time: " + str(round(sim.stepTime, 4)))		
+		graphics.createText("Step time: " + str(round(game.simulation.stepTime, 4)))		
 		roundDigit = max(min(round(.5/gameSpeed), 3), 1)
 		graphics.createText("Game speed: " + str(round(gameSpeed, roundDigit)))
+		graphics.createText("Real puck speed: " + str(round(game.simulation.puck.velocity.magnitude(), 2)))
+		graphics.createText("Captured puck speed: " + str(round(game.leftStrategy.puck.speedMagnitude, 2)))
 		lastTextUpdate = realTime
 	
 	# Update graphics (blit everything to screen)

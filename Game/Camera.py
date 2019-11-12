@@ -1,80 +1,80 @@
-from HelperClasses import *
+from Game.HelperClasses import Filter
 import pygame.math as gameMath
 from Constants import *
-from random import random
+from random import gauss
+from numpy import sign
 
 class Camera():
 	def __init__(self, game, fps):
 		self.game = game
-		self.filter = Filter(150, 2, 1.3)
-		# self.delay = 0.1 # in seconds
+		self.filter = Filter(15, 2.2, 1.4)
+		self.delay = 0.02 # in seconds - will not be precise
 		self.frameRate = fps
 		self.stepsSinceLastCapture = 0
 		self.newData = False
-		self.ballPosition = gameMath.Vector2(0, 0)
+		self.puckPosition = gameMath.Vector2(0, 0)
 		self.positionHistory = []
 		self.xGrid = []
 		self.yGrid = []
-		self.createGrid(35)
+		self.createGrid(4)
+
+		self.historySize = max(round(self.delay/(1/self.frameRate)),1)
 
 	def update(self):
-		stepsToCapture = round((1/self.frameRate)/self.game.simulation.timeStep) 
+		stepsToCapture = round((1/self.frameRate)/self.game.simulation.stepTime) 
 		if self.stepsSinceLastCapture >= stepsToCapture:
-			self.capture()
-			self.game.redPlayer.strategy.newData = True
-			self.game.bluePlayer.strategy.newData = True
-			self.stepsSinceLastCapture = 0
-			self.positionHistory.append(self.ballPosition)
-			if(len(self.positionHistory) > 10):
-				self.positionHistory.pop(0)
 
+			self.positionHistory.insert(0,self.capturePuck())
+			if(len(self.positionHistory) > self.historySize):
+				self.positionHistory.pop(-1)
+
+			self.puckPosition = self.positionHistory[-1]
+			self.newData = True
+			self.stepsSinceLastCapture = 0
 		self.stepsSinceLastCapture += 1
 
 	def createGrid(self, step):
 		self.xGrid.append(0)
 		i = 0
-		while self.xGrid[i] < self.game.field.width:
+		while self.xGrid[i] < FIELD_WIDTH:
 			self.xGrid.append(self.xGrid[i] + step)
 			i += 1
 		
 		
 		self.yGrid.append(-FIELD_HEIGHT/2)
 		i = 0
-		while (self.yGrid[i] < self.game.field.height/2):
+		while (self.yGrid[i] < FIELD_HEIGHT/2):
 			self.yGrid.append(self.yGrid[i] + step)
 			i += 1
 
-	def capture(self):
-		self.ballPosition = gameMath.Vector2(self.game.ball.pos.copy())
-		self.ballPosition.x += random()*5
-		self.ballPosition.y += random()*5
-		# for (let ax of self.game.redPlayer.axes) :
-		# 	let dist = self.ballPosition.x - ax.absoluteX
-		# 	if(abs(dist) < BALL_RADIUS*1.5):				
-		# 		self.ballPosition.x = ax.absoluteX + Math.sign(dist) * BALL_RADIUS + 0.5*(dist)
-		# 		break
-						
-		
-		
-		# for (let ax of self.game.bluePlayer.axes) :
-		# 	let dist = self.ballPosition.x - ax.absoluteX
-		# 	if(abs(dist) < BALL_RADIUS*1.5):				
-		# 		self.ballPosition.x = ax.absoluteX + Math.sign(dist) * BALL_RADIUS + 0.5*(dist)
-		# 		break
-						
-		
+	def capturePuck(self):
+		self.puckPosition = gameMath.Vector2(self.game.simulation.puck.position)
+		self.puckPosition.x += gauss(0, 2)
+		self.puckPosition.y += gauss(0, 2)
 
+		self.blockView()
+		self.discretize()	
+
+		self.puckPosition = self.filter.filterData(self.puckPosition)
+		return self.puckPosition
+
+	def discretize(self):
 		tempPos = 0
 		for element in self.xGrid:
-			if (abs(self.ballPosition.x - element) < abs(self.ballPosition.x - tempPos)):
-				tempPos = element
-	
-		self.ballPosition.x = tempPos
+			if (abs(self.puckPosition.x - element) < abs(self.puckPosition.x - tempPos)):
+				tempPos = element	
+		self.puckPosition.x = tempPos
 
 		tempPos = 0
 		for element in self.yGrid:
-			if (abs(self.ballPosition.y - element) < abs(self.ballPosition.y - tempPos)):
+			if (abs(self.puckPosition.y - element) < abs(self.puckPosition.y - tempPos)):
 				tempPos = element
-	
-		self.ballPosition.y = tempPos
-		self.ballPosition = self.filter.filterData(self.ballPosition)
+		self.puckPosition.y = tempPos
+
+	def blockView(self):
+		for striker in self.game.simulation.strikers:
+			dist = self.puckPosition.x - striker.position.x
+			if(abs(dist) < PUCK_RADIUS*1.5):				
+				self.puckPosition.x = striker.position.x + sign(dist) * PUCK_RADIUS + 0.5*(dist)
+				break
+		

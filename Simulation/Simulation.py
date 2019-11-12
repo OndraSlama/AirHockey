@@ -12,7 +12,8 @@ class Simulation():
 		self.strikers.append(Striker(self, 100,0, STRIKER_RADIUS, STRIKER_MASS))
 		self.strikers.append(Striker(self, FIELD_WIDTH - 100, 0, STRIKER_RADIUS, STRIKER_MASS))
 
-	def step(self):
+	def step(self, stepTime):
+		self.stepTime = stepTime
 
 		# Handle collisions
 		for striker in self.strikers:
@@ -31,5 +32,5 @@ class Simulation():
 
 	def leftMouseDown(self, mousePos):
 		mouse = gameMath.Vector2((p2uX(mousePos[0]), p2uY(mousePos[1])))
-		self.strikers[0].desiredPos = mouse
+		self.strikers[1].desiredPos = mouse
 	
