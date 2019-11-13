@@ -2,10 +2,17 @@
 
 Air hockey game and strategy simulation.
 
-Left click (or drag) - controll right striker
+Dependencies:
+pygame (pip install pygame)
 
-Right click (or drag) - puck will follow mouse (debug, strategy analysis etc.)
+Control:
+
+Left mouse button - control right striker
+
+Right mouse button - puck will follow mouse (debug, strategy analysis etc.)
 
 Mouse scroll - Change speed of the game
+
+Note:
 
 Left player will only try to block incoming puck for now. More advance strategy to come.
