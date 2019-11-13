@@ -121,27 +121,7 @@ class BaseStrategy():
 			self.puck.state = INACURATE
 
 	def process(self, stepTime):
-		self.stepTick(stepTime)	 
-		if not self.goalLineIntersection == -10000 and self.puck.state == ACURATE:
-			self.striker.desiredPosition = gameMath.Vector2(STRIKER_RADIUS/2, self.goalLineIntersection)
-		else:
-			self.striker.desiredPosition = gameMath.Vector2(100, 0)
-			
-		
-	
-
-	# def calculateDesiredPosition(self):
-	# 	for (a of self.playerAxes):
-	# 		minDist
-	# 		minDist = Infinity
-	# 		a.desiredPosition = a.desiredIntercept
-
-	# 		for (dummy of a.axis.dummies):
-	# 			if (abs(a.desiredIntercept - (a.yDisplacement + dummy.offset)) < minDist):
-	# 				if((a.desiredIntercept - dummy.offset) < a.axis.highLimit and (a.desiredIntercept - dummy.offset) > a.axis.lowLimit):
-	# 					minDist = abs(a.desiredIntercept - (a.yDisplacement + dummy.offset))
-	# 					a.desiredPosition = a.desiredIntercept - dummy.offset
-					
+		pass	
 
 	def calculateTrajectory(self):		
 		

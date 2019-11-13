@@ -9,7 +9,7 @@ class StrategyStriker():
 	def __init__(self):
 		self.position = gameMath.Vector2(0, 0)
 		self.velocity = gameMath.Vector2(0, 0)
-		self.desiredPos = gameMath.Vector2(0, 0)
+		self.desiredPosition = gameMath.Vector2(0, 0)
 
 
 class StrategyPuck():

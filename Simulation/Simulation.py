@@ -32,5 +32,5 @@ class Simulation():
 
 	def leftMouseDown(self, mousePos):
 		mouse = gameMath.Vector2((p2uX(mousePos[0]), p2uY(mousePos[1])))
-		self.strikers[1].desiredPos = mouse
+		self.strikers[1].desiredPosition = mouse
 	

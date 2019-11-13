@@ -106,6 +106,8 @@ class Graphics:
 			for line in strategy.puck.trajectory:			
 				self.drawLine((line.start.x, line.start.y), (line.end.x, line.end.y), DIMMED_RED)
 
+		self.drawCircle(strategy.striker.desiredPosition, STRIKER_RADIUS/10, GREY)
+
 	def drawPuck(self, pos):
 		self.drawLine((0, pos.y), (FIELD_WIDTH, pos.y), DIMMED_RED)
 		self.drawLine((pos.x, FIELD_HEIGHT/2), (pos.x, -FIELD_HEIGHT/2), DIMMED_RED)

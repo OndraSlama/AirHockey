@@ -5,7 +5,7 @@ import pygame.math as gameMath
 class Striker(Body):
 	def __init__(self, sim, x, y, r, m=100):
 		super().__init__(sim, x, y, r, m)
-		self.desiredPos = gameMath.Vector2(600, 300)
+		self.desiredPosition = gameMath.Vector2(600, 300)
 
 	def update(self):
 		self.calculateMovement()
@@ -15,7 +15,7 @@ class Striker(Body):
 
 	def calculateMovement(self):
 		gain = (MAX_ACCELERATION/600)
-		vel =  gain*(self.desiredPos - self.position)
+		vel =  gain*(self.desiredPosition - self.position)
 
 		if vel.magnitude() > MAX_SPEED:
 			vel.scale_to_length(MAX_SPEED)

@@ -105,6 +105,7 @@ while running:
 		graphics.createText("Game speed: " + str(round(gameSpeed, roundDigit)))
 		graphics.createText("Real puck speed: " + str(round(game.simulation.puck.velocity.magnitude(), 2)))
 		graphics.createText("Captured puck speed: " + str(round(game.leftStrategy.puck.speedMagnitude, 2)))
+		graphics.createText("Dangerous puck: " + str(game.leftStrategy.isPuckDangerous()))
 		lastTextUpdate = realTime
 	
 	# Update graphics (blit everything to screen)
