@@ -38,8 +38,7 @@ class Camera():
 		i = 0
 		while self.xGrid[i] < FIELD_WIDTH:
 			self.xGrid.append(self.xGrid[i] + step)
-			i += 1
-		
+			i += 1		
 		
 		self.yGrid.append(-FIELD_HEIGHT/2)
 		i = 0

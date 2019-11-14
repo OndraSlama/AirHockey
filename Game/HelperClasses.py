@@ -17,7 +17,8 @@ class Filter():
 			if data == data:
 				self.raw = data		
 				self.diff = self.raw - self.prevFiltered
-				if abs(self.diff.x) < self.threshold and abs(self.diff.y) < self.threshold:
+
+				if self.diff.magnitude_squared() < self.threshold**2:
 					self.addition = gameMath.Vector2(0, 0)
 					self.addition.x = (1/self.lowGain * abs(self.diff.x)/self.threshold) * self.diff.x			
 					self.addition.y = (1/self.lowGain * abs(self.diff.y)/self.threshold) * self.diff.y			
