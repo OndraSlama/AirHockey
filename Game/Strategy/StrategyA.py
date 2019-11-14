@@ -17,18 +17,18 @@ class StrategyA(BaseStrategy):
 	def process(self, stepTime):
 		self.stepTick(stepTime)	 
 
-		if self.puck.position.x > FIELD_WIDTH/2 or self.puck.vector.x > 0:
-			self.striker.desiredPosition = Vector2(100, 0)
-		else:
-			self.striker.desiredPosition = Vector2(100, self.puck.position.y)
+		# if self.puck.position.x > FIELD_WIDTH/2 or self.puck.vector.x > 0:
+		# 	self.striker.desiredPosition = Vector2(100, 0)
+		# else:
+		# 	self.striker.desiredPosition = Vector2(100, self.puck.position.y)
 
-		if not self.goalLineIntersection == -10000 and self.puck.state == ACURATE:
-			self.striker.desiredPosition = Vector2(STRIKER_RADIUS, self.goalLineIntersection)
+		# if not self.goalLineIntersection == -10000 and self.puck.state == ACURATE:
+		# 	self.striker.desiredPosition = Vector2(STRIKER_RADIUS, self.goalLineIntersection)
 
-		if not self.isPuckDangerous():
-			# step = (self.puck.position - self.striker.position)
-			# step.scale_to_length(step.magnitude() + PUCK_RADIUS*2)
-			self.striker.desiredPosition = self.puck.position #self.striker.position + step
+		# if not self.isPuckDangerous():
+		# 	# step = (self.puck.position - self.striker.position)
+		# 	# step.scale_to_length(step.magnitude() + PUCK_RADIUS*2)
+		# 	self.striker.desiredPosition = self.puck.position #self.striker.position + step
 
 
 	def isPuckDangerous(self):

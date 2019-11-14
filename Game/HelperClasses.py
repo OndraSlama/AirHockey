@@ -16,15 +16,17 @@ class Filter():
 		if isinstance(data, gameMath.Vector2):
 			if data == data:
 				self.raw = data		
-				self.diff = self.raw - self.prevFiltered				
+				self.diff = self.raw - self.prevFiltered
 				if abs(self.diff.x) < self.threshold and abs(self.diff.y) < self.threshold:
 					self.addition = gameMath.Vector2(0, 0)
 					self.addition.x = (1/self.lowGain * abs(self.diff.x)/self.threshold) * self.diff.x			
 					self.addition.y = (1/self.lowGain * abs(self.diff.y)/self.threshold) * self.diff.y			
+					# print("Small")
 				else:
 					self.addition = gameMath.Vector2(0, 0)
 					self.addition.x = 1/self.highGain * self.diff.x
 					self.addition.y = 1/self.highGain * self.diff.y
+					# print("Big")
 
 				if not isinstance(data, gameMath.Vector2): self.prevFiltered = gameMath.Vector2(0, 0)
 				self.filtered = self.prevFiltered + self.addition

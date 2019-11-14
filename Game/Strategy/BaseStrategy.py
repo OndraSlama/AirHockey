@@ -129,13 +129,17 @@ class BaseStrategy():
 		yBound = (FIELD_HEIGHT / 2 - PUCK_RADIUS)
 		myLine = Line(self.puck.position, self.puck.position)
 		tempVector = gameMath.Vector2(self.puck.vector)
-
 		
 		self.goalLineIntersection = -10000
 
 		for i in range(self.noOfBounces + 1):
-			a = tempVector.y / tempVector.x
-			b = myLine.start.y - a * myLine.start.x
+			if not tempVector.x == 0:
+				a = tempVector.y / tempVector.x
+				b = myLine.start.y - a * myLine.start.x
+			else:
+				a = 0
+				b = 0
+				
 
 			if tempVector.x == 0:
 				myLine.end.y = sign(tempVector.y) * yBound				
@@ -167,7 +171,8 @@ class BaseStrategy():
 			myLine.start.x = myLine.end.x
 			myLine.start.y = myLine.end.y 
 		
-	
+	def findIntersection(self, line1, line2):
+		pass
 
 	# draw():
 	# 	if(self.player.color == "red"):
