@@ -153,7 +153,7 @@ class BaseStrategy():
 				myLine.end.x = PUCK_RADIUS
 				myLine.end.y = a*myLine.end.x + b
 				tempVector.x *= -1
-				tempVector.y *= -1	
+				tempVector.y *= -1
 
 				# Set goal interection
 				self.goalLineIntersection = myLine.end.y
@@ -167,31 +167,103 @@ class BaseStrategy():
 
 			self.puck.trajectory.append(myLine.copy())
 			# If puck aims at goal, break
-			if abs(myLine.end.y) < GOAL_SPAN/2: break  
+			if abs(myLine.end.y) < GOAL_SPAN/2: break
 			myLine.start.x = myLine.end.x
-			myLine.start.y = myLine.end.y 
+			myLine.start.y = myLine.end.y
+
+	def getIntersectPoint(self, line1, line2):
+		p1 = (line1.start.x, line1.start.y)
+		p2 = (line1.end.x, line1.end.y)
+		p3 = (line2.start.x, line1.start.y)
+		p4 = (line2.end.x, line1.end.y)
+		m1 = self.calculateGradient(p1, p2)
+		m2 = self.calculateGradient(p3, p4)
 		
-	def findIntersection(self, line1, line2):
-		pass
+		# See if the the lines are parallel
+		if (m1 != m2):
+			# Not parallel
+			
+			# See if either line is vertical
+			if (m1 is not None and m2 is not None):
+				# Neither line vertical
+				b1 = self.calculateYAxisIntersect(p1, m1)
+				b2 = self.calculateYAxisIntersect(p3, m2)   
+				x = (b2 - b1) / (m1 - m2)       
+				y = (m1 * x) + b1           
+			else:
+				# Line 1 is vertical so use line 2's values
+				if (m1 is None):
+					b2 = self.calculateYAxisIntersect(p3, m2)
+					x = p1[0]
+					y = (m2 * x) + b2
+				# Line 2 is vertical so use line 1's values
+				elif (m2 is None):
+					b1 = self.calculateYAxisIntersect(p1, m1)
+					x = p3[0]
+					y = (m1 * x) + b1
+				else:
+					assert False
+					
+			return gameMath.Vector2(x,y)
+		else:
+			# Parallel lines with same 'b' value must be the same line so they intersect
+			# everywhere in this case we return the start and end points of both lines
+			# the calculateIntersectPoint method will sort out which of these points
+			# lays on both line segments
+			b1, b2 = None, None # vertical lines have no b value
+			if m1 is not None:
+				b1 = self.calculateYAxisIntersect(p1, m1)
+			
+			if m2 is not None:
+				b2 = self.calculateYAxisIntersect(p3, m2)
+			
+			# If these parallel lines lay on one another   
+			if b1 == b2:
+				return None # p1,p2,p3,p4
+			else:
+				return None
+
+	def getPointLineDist(self, point, line):
+		m = self.calculateGradient(line.start, line.end)
+		k = self.calculateYAxisIntersect(line.start, m)
+
+		if m is not None:
+			return abs(k + m*point.x - point.y) / (1 + m**2)**0.5
+		else:
+			return abs(line.start.x - point.x)
+
+	def calculateGradient(self, p1, p2):  
+		# Ensure that the line is not vertical
+		if (p1[0] != p2[0]):
+			m = (p1[1] - p2[1]) / (p1[0] - p2[0])
+			return m
+		else:
+			return None
+
+	def calculateYAxisIntersect(self, p, m):
+		if m is not None:
+   			return  p[1] - (m * p[0])
+		else:
+			return None
 
 	# draw():
 	# 	if(self.player.color == "red"):
 	# 		# Speed vector
 	# 		pos = b2.u2p(self.ball.position)
-	# 		# stroke(0, 255, 0, 100)	  
+	# 		# stroke(0, 255, 0, 100)
 	# 		# strokeWeight(4)
 	# 		# line(pos.x, pos.y, pos.x + self.ball.velocity.x, pos.y)
-	# 		# line(pos.x, pos.y, pos.x, pos.y - self.ball.velocity.y)   
+	# 		# line(pos.x, pos.y, pos.x, pos.y - self.ball.velocity.y)
 
-	# 		# Trajectory		
+	# 		# Trajectory
 	# 		strokeWeight(1)
 	# 		for (myLine of self.ball.trajectory):
 	# 			pos = b2.u2p(myLine.start.x, myLine.start.y)
 	# 			pos2 = b2.u2p(myLine.end.x, myLine.end.y)
 	# 			stroke(255, 0, 0, 100)
 	# 			line(pos.x, pos.y, pos2.x, pos2.y)
-			
-		
+
+
 	# 		# Ball history   
 	# 		noFill()		
 	# 		for(i = 0 i < self.balls.length i += 1):	 
@@ -215,12 +287,12 @@ class BaseStrategy():
 	# 			desired = b2.u2p(FIELD_WIDTH - axis.x, -axis.desiredIntercept)
 	# 		else:
 	# 			desired = b2.u2p(axis.x, axis.desiredIntercept)
-					
+
 	# 		stroke("black")
 	# 		fill("black")
 	# 		ellipse(desired.x, desired.y, 4)
-		
-	
+
+
 
 
 
@@ -229,5 +301,5 @@ class BaseStrategy():
 #		 self.position
 #		 self.velocity
 #		 self.trajectory
-#	 
+#
 # 

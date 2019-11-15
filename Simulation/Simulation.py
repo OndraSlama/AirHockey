@@ -9,8 +9,8 @@ class Simulation():
 		self.stepTime = MIN_STEP_TIME
 		self.puck = Puck(self, 0, 0, PUCK_RADIUS, PUCK_MASS)
 		self.strikers = []
-		self.strikers.append(Striker(self, 100,0, STRIKER_RADIUS, STRIKER_MASS))
-		self.strikers.append(Striker(self, FIELD_WIDTH - 100, 0, STRIKER_RADIUS, STRIKER_MASS))
+		self.strikers.append(Striker(self, 100,0, STRIKER_RADIUS, STRIKER_MASS, side="left"))
+		self.strikers.append(Striker(self, FIELD_WIDTH - 100, 0, STRIKER_RADIUS, STRIKER_MASS, side="right"))
 
 	def step(self, stepTime):
 		self.stepTime = stepTime

@@ -106,6 +106,9 @@ class Graphics:
 			for line in strategy.puck.trajectory:			
 				self.drawLine((line.start.x, line.start.y), (line.end.x, line.end.y), DIMMED_RED)
 
+		# draw line to goal
+		self.drawLine((strategy.lineToGoal.start.x, strategy.lineToGoal.start.y), (strategy.lineToGoal.end.x, strategy.lineToGoal.end.y), DIMMED_RED)
+
 		self.drawCircle(strategy.striker.desiredPosition, STRIKER_RADIUS/10, GREY)
 
 	def drawPuck(self, pos):
@@ -114,13 +117,18 @@ class Graphics:
 		self.drawCircle(pos, PUCK_RADIUS, RED)
 		self.drawCircle(pos, PUCK_RADIUS * 0.8, DIMMED_RED)
 		self.drawCircle(pos, PUCK_RADIUS * 0.7, RED)
+		
 
-	def drawStriker(self, pos, color=GREY):
+
+	def drawStriker(self, pos, robot=False, color=GREY):
+		if robot:
+			pygame.draw.line(self.window, [el * 0.6 for el in color], (u2pX(pos.x), u2pY(FIELD_HEIGHT/2)), (u2pX(pos.x), u2pY(-FIELD_HEIGHT/2)), 3)
 		self.drawCircle(pos, STRIKER_RADIUS, color)
 		self.drawCircle(pos, STRIKER_RADIUS * 0.9,  [el * 0.4 for el in color])
 		self.drawCircle(pos, STRIKER_RADIUS * 0.85,  color)
 		self.drawCircle(pos, STRIKER_RADIUS * 0.45,  [el * 0.4 for el in color])
 		self.drawCircle(pos, STRIKER_RADIUS * 0.4,  color)
+		
 
 	# def drawRealBall(self, pos):
 	#	 pygame.gfxdraw.aacircle(self.window, u2pX(

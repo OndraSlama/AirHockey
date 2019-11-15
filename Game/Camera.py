@@ -7,7 +7,7 @@ from numpy import sign
 class Camera():
 	def __init__(self, game, fps):
 		self.game = game
-		self.filter = Filter(15, 3, 1.4)
+		self.filter = Filter(20, 2.2, 1.4)
 		self.delay = 0.02 # in seconds - will not be precise
 		self.frameRate = fps
 		self.stepsSinceLastCapture = 0

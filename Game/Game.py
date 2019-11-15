@@ -2,6 +2,7 @@ from Constants import *
 from Simulation.Simulation import Simulation
 from Game.Camera import Camera
 from Game.Strategy.StrategyA import StrategyA
+from Game.Strategy.BaseStrategy import BaseStrategy
 from pygame.math import Vector2
 
 class Game():
@@ -9,7 +10,7 @@ class Game():
 		self.simulation = Simulation()
 		self.camera = Camera(self, 90)
 		self.leftStrategy = StrategyA()
-		self.rightStrategy = StrategyA()
+		self.rightStrategy = BaseStrategy()
 
 	def update(self, stepTime):
 		self.simulation.step(stepTime)

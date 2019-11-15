@@ -31,7 +31,6 @@ class Body():
 			if force.magnitude() > magnitude:
 				force.scale_to_length(magnitude)
 			self.applyForce(force)
-		# print(force)
 
 	def move(self, velDamp, timeStep):
 		self.position += self.velocity * timeStep
