@@ -4,6 +4,7 @@ import pygame.math as gameMath
 from math import floor
 from Constants import *
 from Functions import *
+from Game.Strategy.StrategyStructs import *
 
 
 
@@ -104,12 +105,32 @@ class Graphics:
 
 		if strategy.puck.state == 1:
 			for line in strategy.puck.trajectory:			
-				self.drawLine((line.start.x, line.start.y), (line.end.x, line.end.y), DIMMED_RED)
+				self.drawLine(line.start, line.end, DIMMED_RED)
 
 		# draw line to goal
-		self.drawLine((strategy.lineToGoal.start.x, strategy.lineToGoal.start.y), (strategy.lineToGoal.end.x, strategy.lineToGoal.end.y), DIMMED_RED)
+		self.drawLine(strategy.lineToGoal.start, strategy.lineToGoal.end, DIMMED_RED)
 
+		# draw desired position
 		self.drawCircle(strategy.striker.desiredPosition, STRIKER_RADIUS/10, GREY)
+
+		# DEBUG
+		# if len(strategy.puck.trajectory) > 0:
+		# 	trajectoryVector = strategy.puck.trajectory[-1].end - strategy.puck.trajectory[-1].start
+		# 	vector = gameMath.Vector2(-trajectoryVector.y, trajectoryVector.x)
+		# 	vector.scale_to_length(200)
+		# 	secondPoint = strategy.striker.position + vector
+		# 	line = Line(strategy.striker.position, secondPoint)
+		# 	self.drawLine(line.start, line.end, DIMMED_RED)
+		# 	point = strategy.getIntersectPoint(strategy.puck.trajectory[-1], line)
+		# 	self.drawCircle(point, STRIKER_RADIUS/10, GREY)
+
+		# line1 = Line(gameMath.Vector2(300, -200), gameMath.Vector2(700, 200))
+		# line2 = Line(gameMath.Vector2(400, 200), gameMath.Vector2(600, -250))
+		# point1 = strategy.getIntersectPoint(line1, line2)
+		# self.drawLine(line1.start, line1.end, YELLOW)
+		# self.drawLine(line2.start, line2.end, YELLOW)
+		# self.drawCircle(point1, STRIKER_RADIUS/10, YELLOW)
+
 
 	def drawPuck(self, pos):
 		self.drawLine((0, pos.y), (FIELD_WIDTH, pos.y), DIMMED_RED)
@@ -121,8 +142,8 @@ class Graphics:
 
 
 	def drawStriker(self, pos, robot=False, color=GREY):
-		if robot:
-			pygame.draw.line(self.window, [el * 0.6 for el in color], (u2pX(pos.x), u2pY(FIELD_HEIGHT/2)), (u2pX(pos.x), u2pY(-FIELD_HEIGHT/2)), 3)
+		# if robot:
+		# 	pygame.draw.line(self.window, [el * 0.6 for el in color], (u2pX(pos.x), u2pY(FIELD_HEIGHT/2)), (u2pX(pos.x), u2pY(-FIELD_HEIGHT/2)), 3)
 		self.drawCircle(pos, STRIKER_RADIUS, color)
 		self.drawCircle(pos, STRIKER_RADIUS * 0.9,  [el * 0.4 for el in color])
 		self.drawCircle(pos, STRIKER_RADIUS * 0.85,  color)

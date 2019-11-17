@@ -18,11 +18,12 @@ class BaseStrategy():
 
 		# Trajectory info
 		self.goalLineIntersection = 0
+		self.bounces = False
 
 		# Parameters
 		self.historySize = 50
 		self.noOfBounces = 1
-		self.minSpeedLimit = 30
+		self.minSpeedLimit = 100
 		self.angletolerance = 70
 		self.lowAngletolerance = 8
 		self.positionTolerance = 100
@@ -121,7 +122,25 @@ class BaseStrategy():
 			self.puck.state = INACURATE
 
 	def process(self, stepTime):
-		pass	
+		self.stepTick(stepTime)
+
+		# Your strategy code here
+
+		self.limitMovement()	
+
+	def limitMovement(self):
+		if self.striker.desiredPosition.x > STRIKER_AREA_WIDTH:
+			self.striker.desiredPosition.x = STRIKER_AREA_WIDTH
+
+		if abs(self.striker.desiredPosition.y) > FIELD_HEIGHT/2 - STRIKER_RADIUS:
+			self.striker.desiredPosition.y = sign(self.striker.desiredPosition.y) * (FIELD_HEIGHT/2 - STRIKER_RADIUS)
+
+		if self.striker.desiredPosition.x < STRIKER_RADIUS: 
+			self.striker.desiredPosition.x = STRIKER_RADIUS
+
+		if self.striker.desiredPosition.x > FIELD_WIDTH - STRIKER_RADIUS: 
+			self.striker.desiredPosition.x = FIELD_WIDTH - STRIKER_RADIUS
+
 
 	def calculateTrajectory(self):		
 		
@@ -138,8 +157,7 @@ class BaseStrategy():
 				b = myLine.start.y - a * myLine.start.x
 			else:
 				a = 0
-				b = 0
-				
+				b = 0				
 
 			if tempVector.x == 0:
 				myLine.end.y = sign(tempVector.y) * yBound				
@@ -167,15 +185,21 @@ class BaseStrategy():
 
 			self.puck.trajectory.append(myLine.copy())
 			# If puck aims at goal, break
-			if abs(myLine.end.y) < GOAL_SPAN/2: break
+			if abs(myLine.end.y) < FIELD_HEIGHT/2 - PUCK_RADIUS: break
 			myLine.start.x = myLine.end.x
 			myLine.start.y = myLine.end.y
+
+		if len(self.puck.trajectory) > 1:
+			self.bounces = True
+		else:
+			self.bounces = False
+			
 
 	def getIntersectPoint(self, line1, line2):
 		p1 = (line1.start.x, line1.start.y)
 		p2 = (line1.end.x, line1.end.y)
-		p3 = (line2.start.x, line1.start.y)
-		p4 = (line2.end.x, line1.end.y)
+		p3 = (line2.start.x, line2.start.y)
+		p4 = (line2.end.x, line2.end.y)
 		m1 = self.calculateGradient(p1, p2)
 		m2 = self.calculateGradient(p3, p4)
 		
@@ -187,9 +211,9 @@ class BaseStrategy():
 			if (m1 is not None and m2 is not None):
 				# Neither line vertical
 				b1 = self.calculateYAxisIntersect(p1, m1)
-				b2 = self.calculateYAxisIntersect(p3, m2)   
-				x = (b2 - b1) / (m1 - m2)       
-				y = (m1 * x) + b1           
+				b2 = self.calculateYAxisIntersect(p3, m2)
+				x = (b2 - b1) / (m1 - m2)
+				y = (m1 * x) + b1
 			else:
 				# Line 1 is vertical so use line 2's values
 				if (m1 is None):

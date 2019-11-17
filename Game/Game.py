@@ -10,7 +10,7 @@ class Game():
 		self.simulation = Simulation()
 		self.camera = Camera(self, 90)
 		self.leftStrategy = StrategyA()
-		self.rightStrategy = BaseStrategy()
+		self.rightStrategy = StrategyA()
 
 	def update(self, stepTime):
 		self.simulation.step(stepTime)

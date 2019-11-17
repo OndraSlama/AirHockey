@@ -3,10 +3,9 @@ from Constants import *
 import pygame.math as gameMath
 
 class Striker(Body):
-	def __init__(self, sim, x, y, r, m=100, side="left"):
+	def __init__(self, sim, x, y, r, m=100):
 		super().__init__(sim, x, y, r, m)
 		self.desiredPosition = gameMath.Vector2(600, 300)
-		self.side = side
 
 	def update(self):
 		self.calculateMovement()
@@ -15,13 +14,7 @@ class Striker(Body):
 		self.bounce(BORDER_RESTITUTION, FIELD_HEIGHT/2, -FIELD_HEIGHT/2, 0, FIELD_WIDTH, GOAL_SPAN)
 
 	def calculateMovement(self):	
-		if self.side == "left":
-			if self.desiredPosition.x > STRIKER_AREA_WIDTH:
-				self.desiredPosition.x = STRIKER_AREA_WIDTH
-		else:
-			if self.desiredPosition.x < FIELD_WIDTH - STRIKER_AREA_WIDTH:
-				self.desiredPosition.x = FIELD_WIDTH - STRIKER_AREA_WIDTH
-
+		
 		gain = (MAX_ACCELERATION/600)
 		vel =  gain*(self.desiredPosition - self.position)
 
