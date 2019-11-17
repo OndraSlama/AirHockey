@@ -37,9 +37,9 @@ class Game():
 
 	def checkGoal(self):
 		if self.simulation.puck.position.x < 0:
-			self.score[0] += 1
+			self.score[1] += 1
 			self.simulation.spawnPuck()
 
 		if self.simulation.puck.position.x > FIELD_WIDTH:
-			self.score[1] += 1
+			self.score[0] += 1
 			self.simulation.spawnPuck()
