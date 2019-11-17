@@ -96,7 +96,7 @@ while running:
 		graphics.createText("Air Hockey", size=40, alignment="center")
 		graphics.createText("Game simulation", line=2, alignment="center")
 
-		graphics.createText("11:4", size=60, line=3, alignment="center")
+		graphics.createText(str(game.score[0]) + ":" + str(game.score[1]), size=60, line=3, alignment="center")
 
 		graphics.createText(".........................................", line=6, alignment="center")
 		graphics.createText("FPS: " + str(round(currentFps, 2)), line=8)

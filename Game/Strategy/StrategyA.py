@@ -72,7 +72,7 @@ class StrategyA(BaseStrategy):
 				self.state = DEFEND
 
 			if subCase(WAITING):
-				if abs(self.goalLineIntersection) < GOAL_SPAN/2 and self.puck.state == ACURATE and self.puck.speedMagnitude > 200:
+				if abs(self.goalLineIntersection) < GOAL_SPAN/2 and self.puck.state == ACURATE or self.puck.speedMagnitude > 200:
 					self.subState = ATTACK_SHOOT
 				else:
 					self.subState = ATTACK_INIT
