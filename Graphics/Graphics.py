@@ -107,13 +107,23 @@ class Graphics:
 			for line in strategy.puck.trajectory:			
 				self.drawLine(line.start, line.end, DIMMED_RED)
 
-		# draw line to goal
-		self.drawLine(strategy.lineToGoal.start, strategy.lineToGoal.end, DIMMED_RED)
-
 		# draw desired position
 		self.drawCircle(strategy.striker.desiredPosition, STRIKER_RADIUS/10, GREY)
+		# draw predicted
+		# self.drawCircle(strategy.predictedPosition, STRIKER_RADIUS/10, YELLOW)
 
 		# DEBUG
+		# if len(strategy.puck.trajectory) > 0:
+		# 	dist = strategy.getPointLineDist(strategy.striker.position, strategy.puck.trajectory[0])
+		# 	dist = strategy.striker.position.distance_to(strategy.striker.desiredPosition)
+		# 	time = dist/MAX_SPEED
+		# 	vector = gameMath.Vector2(strategy.puck.vector) * (strategy.puck.speedMagnitude * time)
+		# 	desired = strategy.puck.position + vector * 1
+		# 	self.drawCircle(desired, STRIKER_RADIUS/10, YELLOW)
+
+
+		# # draw line to goal
+		# self.drawLine(strategy.lineToGoal.start, strategy.lineToGoal.end, DIMMED_RED)
 		# if len(strategy.puck.trajectory) > 0:
 		# 	trajectoryVector = strategy.puck.trajectory[-1].end - strategy.puck.trajectory[-1].start
 		# 	vector = gameMath.Vector2(-trajectoryVector.y, trajectoryVector.x)

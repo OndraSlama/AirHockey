@@ -8,7 +8,7 @@ from random import gauss, randrange
 class Simulation():
 	def __init__(self, game):
 		self.game = game
-		self.stepTime = MIN_STEP_TIME		
+		self.stepTime = MIN_STEP_TIME
 		self.strikers = []
 		self.puck = None
 		self.strikers.append(Striker(self, 100,0, STRIKER_RADIUS, STRIKER_MASS))

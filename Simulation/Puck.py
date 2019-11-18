@@ -25,5 +25,5 @@ class Puck(Body):
 		if self.simulation.game.gameTime - self.lastMovement > 2:
 			direction = sign(self.position.x - FIELD_WIDTH/2)
 			if direction == 0: direction = 1
-			self.applyForce(Vector2(direction*randrange(500000, 800000), randrange(-300000, 300000)))
+			self.applyForce(Vector2(direction*randrange(500000, 600000), randrange(-300000, 300000)))
 
