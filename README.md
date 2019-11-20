@@ -10,10 +10,12 @@ Air hockey game and strategy simulation.
 
 -   Left mouse button - control right striker
 
+-   Middle mouse button - puck will move to mouse position instantly
+
 -   Right mouse button - puck will follow mouse (debug, strategy analysis etc.)
 
 -   Mouse scroll - Change speed of the game
 
 ## Note:
 
-Both strikers should now exhibit more advanced playstyle. Styl need to implement some kind of puck position prediction (except trajectory blocking) and improve aiming.
+Both strikers should now exhibit more advanced playstyle. Prediction and aiming are now implemented. 2 different strategies play againt each other. This should be almost final version of hardcoded strategies. Next step is to try teaching NN to play (NEAT, neuroevultion etc).
