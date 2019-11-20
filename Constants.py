@@ -13,15 +13,16 @@ STRIKER_RADIUS = 30
 
 # -------------- STRATEGY --------------
 DEFENSE_LINE = STRIKER_RADIUS + PUCK_RADIUS
-CLOSE_DISTANCE = PUCK_RADIUS * 3 # what is considered to be "close enough"
+STOPPING_LINE = FIELD_WIDTH/6
+CLOSE_DISTANCE = PUCK_RADIUS # what is considered to be "close enough"
 
 # ------------- SIMULATION -------------
-MIN_STEP_TIME = 0.02
+MIN_STEP_TIME = 0.015
 PUCK_MASS = 20
 STRIKER_MASS = 100
 BORDER_RESTITUTION = 0.7
 STRIKER_RESTITUTION = 0.5
-FRICTION_MAG = 500
+FRICTION_MAG = 100
 VELOCITY_DAMP = 0.995
 
 # -------------- LIMITS --------------

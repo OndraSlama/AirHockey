@@ -15,7 +15,7 @@ class Puck(Body):
 	def update(self):
 		self.friction(FRICTION_MAG, self.simulation.stepTime)
 		self.moveIfStuck()
-		self.move(VELOCITY_DAMP**(self.simulation.stepTime/0.02), self.simulation.stepTime)
+		self.move(VELOCITY_DAMP**(self.simulation.stepTime/MIN_STEP_TIME), self.simulation.stepTime)
 		self.bounce(BORDER_RESTITUTION, FIELD_HEIGHT/2, -FIELD_HEIGHT/2, 0, FIELD_WIDTH, GOAL_SPAN)	
 
 	def moveIfStuck(self):

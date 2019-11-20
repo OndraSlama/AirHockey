@@ -1,12 +1,13 @@
-import pygame.math as gameMath
+from pygame.math import Vector2
+from Constants import *
 
 class Body():
 	def __init__(self, sim, x, y, r, m=20):
 		self.simulation = sim
-		self.position = gameMath.Vector2(x, y)
-		self.velocity = gameMath.Vector2(0, 0)
-		self.acceleration = gameMath.Vector2(0, 0)
-		self.force = gameMath.Vector2(0, 0)
+		self.position = Vector2(x, y)
+		self.velocity = Vector2(0, 0)
+		self.acceleration = Vector2(0, 0)
+		self.force = Vector2(0, 0)
 		self.radius = r
 		self.mass = m
 		if m == 0:
@@ -26,7 +27,7 @@ class Body():
 		velMag = self.velocity.magnitude()
 		if not (velMag == 0):
 			slope = magnitude/10
-			scale = 0.02 / timeStep
+			scale = MIN_STEP_TIME / timeStep
 			force = self.velocity.normalize() * (velMag * -slope) * scale
 			if force.magnitude() > magnitude:
 				force.scale_to_length(magnitude)

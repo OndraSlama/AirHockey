@@ -1,11 +1,11 @@
 from Simulation.Body import Body
 from Constants import *
-import pygame.math as gameMath
+from pygame.math import Vector2
 
 class Striker(Body):
 	def __init__(self, sim, x, y, r, m=100):
 		super().__init__(sim, x, y, r, m)
-		self.desiredPosition = gameMath.Vector2(600, 300)
+		self.desiredPosition = Vector2(600, 300)
 
 	def update(self):
 		self.calculateMovement()

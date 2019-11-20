@@ -106,7 +106,7 @@ class StrategyC(BaseStrategy):
 			fromPoint = self.puck.position
 
 		a = Line(fromPoint, Vector2(0,0))
-		b = Line(gameMath.Vector2(DEFENSE_LINE, 0), gameMath.Vector2(DEFENSE_LINE, FIELD_HEIGHT))
+		b = Line(Vector2(DEFENSE_LINE, 0), Vector2(DEFENSE_LINE, FIELD_HEIGHT))
 		desiredPosition = self.getIntersectPoint(a, b)
 		if desiredPosition is not None:
 			self.setDesired(Vector2(desiredPosition))

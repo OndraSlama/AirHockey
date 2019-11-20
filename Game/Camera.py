@@ -1,5 +1,5 @@
 from Game.HelperClasses import Filter
-import pygame.math as gameMath
+from pygame.math import Vector2
 from Constants import *
 from random import gauss
 from numpy import sign
@@ -12,7 +12,7 @@ class Camera():
 		self.frameRate = fps
 		self.stepsSinceLastCapture = 0
 		self.newData = False
-		self.puckPosition = gameMath.Vector2(0, 0)
+		self.puckPosition = Vector2(0, 0)
 		self.positionHistory = []
 		self.xGrid = []
 		self.yGrid = []
@@ -47,7 +47,7 @@ class Camera():
 			i += 1
 
 	def capturePuck(self):
-		self.puckPosition = gameMath.Vector2(self.game.simulation.puck.position)
+		self.puckPosition = Vector2(self.game.simulation.puck.position)
 		self.puckPosition.x += gauss(0, 2)
 		self.puckPosition.y += gauss(0, 2)
 

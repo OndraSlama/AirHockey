@@ -1,6 +1,6 @@
 import pygame
 import pygame.gfxdraw
-import pygame.math as gameMath
+from pygame.math import Vector2
 from math import floor
 from Constants import *
 from Functions import *
@@ -119,7 +119,7 @@ class Graphics:
 		# 	dist = strategy.getPointLineDist(strategy.striker.position, strategy.puck.trajectory[0])
 		# 	dist = strategy.striker.position.distance_to(strategy.striker.desiredPosition)
 		# 	time = dist/MAX_SPEED
-		# 	vector = gameMath.Vector2(strategy.puck.vector) * (strategy.puck.speedMagnitude * time)
+		# 	vector = Vector2(strategy.puck.vector) * (strategy.puck.speedMagnitude * time)
 		# 	desired = strategy.puck.position + vector * 1
 		# 	self.drawCircle(desired, STRIKER_RADIUS/10, YELLOW)
 
@@ -128,7 +128,7 @@ class Graphics:
 		# self.drawLine(strategy.lineToGoal.start, strategy.lineToGoal.end, DIMMED_RED)
 		# if len(strategy.puck.trajectory) > 0:
 		# 	trajectoryVector = strategy.puck.trajectory[-1].end - strategy.puck.trajectory[-1].start
-		# 	vector = gameMath.Vector2(-trajectoryVector.y, trajectoryVector.x)
+		# 	vector = Vector2(-trajectoryVector.y, trajectoryVector.x)
 		# 	vector.scale_to_length(200)
 		# 	secondPoint = strategy.striker.position + vector
 		# 	line = Line(strategy.striker.position, secondPoint)
@@ -136,14 +136,14 @@ class Graphics:
 		# 	point = strategy.getIntersectPoint(strategy.puck.trajectory[-1], line)
 		# 	self.drawCircle(point, STRIKER_RADIUS/10, GREY)
 
-		# line1 = Line(gameMath.Vector2(300, -200), gameMath.Vector2(700, 200))
-		# line2 = Line(gameMath.Vector2(400, 200), gameMath.Vector2(600, -250))
+		# line1 = Line(Vector2(300, -200), Vector2(700, 200))
+		# line2 = Line(Vector2(400, 200), Vector2(600, -250))
 		# point1 = strategy.getIntersectPoint(line1, line2)
 		# self.drawLine(line1.start, line1.end, YELLOW)
 		# self.drawLine(line2.start, line2.end, YELLOW)
 		# self.drawCircle(point1, STRIKER_RADIUS/10, YELLOW)
 
-		# line1 = Line(gameMath.Vector2(600, 0), gameMath.Vector2(600, 200))
+		# line1 = Line(Vector2(600, 0), Vector2(600, 200))
 		# point1 = strategy.getBothCoordinates(line1, y = FIELD_HEIGHT/2)
 		# self.drawLine(line1.start, line1.end, YELLOW)
 		# self.drawCircle(point1, STRIKER_RADIUS/10, YELLOW)

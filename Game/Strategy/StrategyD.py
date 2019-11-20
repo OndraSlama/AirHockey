@@ -3,13 +3,16 @@ from Game.Strategy.StrategyStructs import *
 from pygame.math import Vector2
 from numpy import sign
 from Constants import *
+from random import random
 
 DEFEND = 0
 WAITING = 0
 ATTACK = 10
 ATTACK_INIT = 11
-ATTACK_SHOOT = 12
+ATTACK_PREPARE_POSITION = 12
+ATTACK_SHOOT = 13
 DEFEND = 20
+STOP_PUCK = 30
 
 class StrategyD(BaseStrategy):
 	def __init__(self):
@@ -34,7 +37,10 @@ class StrategyD(BaseStrategy):
 				self.defendGoalLastLine()
 			elif self.canAttack():
 				self.subState = WAITING
-				self.state = ATTACK				
+				if self.shouldStop():
+					self.state = STOP_PUCK
+				else:
+					self.state = ATTACK				
 			elif self.shouldIntercept():
 				self.defendTrajectory()
 			else:
@@ -48,29 +54,73 @@ class StrategyD(BaseStrategy):
 
 			self.getPredictedPuckPosition(self.puck.position)
 			if subCase(WAITING):
+				self.lineToGoal = Line(self.predictedPosition, Vector2(FIELD_WIDTH*1.2, 0))
+
 				if abs(self.goalLineIntersection) < GOAL_SPAN/2 and self.puck.state == ACURATE or self.puck.speedMagnitude > 200:
 					self.subState = ATTACK_SHOOT
 				else:
 					self.subState = ATTACK_INIT
 			
 			elif subCase(ATTACK_INIT):
-				self.lineToGoal = Line(self.predictedPosition, Vector2(FIELD_WIDTH*1, 0))
-				vectorFromGoal = self.lineToGoal.start - self.lineToGoal.end
-				vectorFromGoal.scale_to_length(STRIKER_RADIUS*4)
-				self.setDesired(self.predictedPosition + vectorFromGoal)
 
+				randomNum = random()
+				chosen = False
+
+				# print(randomNum)
+
+				topBounce = Line(self.predictedPosition, Vector2(FIELD_WIDTH*0.9, FIELD_HEIGHT))
+				vectorFromGoal = topBounce.start - topBounce.end
+				vectorFromGoal.scale_to_length(STRIKER_RADIUS*6)
+				if not self.striker.position.y < -FIELD_HEIGHT*0.3 and randomNum < 0.3:
+					self.lineToGoal = topBounce
+					finalVector = vectorFromGoal
+					chosen = True
+					# print("top")
+
+				bottomBounce = Line(self.predictedPosition, Vector2(FIELD_WIDTH*0.9, -FIELD_HEIGHT))
+				vectorFromGoal = bottomBounce.start - bottomBounce.end
+				vectorFromGoal.scale_to_length(STRIKER_RADIUS*6)			
+				if not self.striker.position.y > FIELD_HEIGHT*0.3 - STRIKER_RADIUS*4 and randomNum > 0.7:
+					self.lineToGoal = bottomBounce
+					finalVector = vectorFromGoal
+					chosen = True
+					# print("bottom")
+
+				if not chosen:
+					center = Line(self.predictedPosition, Vector2(FIELD_WIDTH*1.15, 0))
+					vectorFromGoal = center.start - center.end
+					vectorFromGoal.scale_to_length(STRIKER_RADIUS*6)		
+					finalVector = vectorFromGoal	
+					self.lineToGoal = center
+					# print("center")
+
+				self.setDesired(self.predictedPosition + finalVector)
+				self.subState = ATTACK_PREPARE_POSITION
+
+			elif subCase(ATTACK_PREPARE_POSITION):
 				if self.striker.position.distance_squared_to(self.striker.desiredPosition) < CLOSE_DISTANCE**2 or self.isPuckDangerous() or self.isInGoodPosition(self.lineToGoal):
 					self.subState = ATTACK_SHOOT
 
 			elif subCase(ATTACK_SHOOT):
 
 				# Accurate shot
-				if len(self.puck.trajectory) > 0 and self.getPointLineDist(self.striker.position, self.puck.trajectory[0]) < STRIKER_RADIUS:
+				if len(self.puck.trajectory) > 0 and self.getPointLineDist(self.striker.position, self.puck.trajectory[0]) < STRIKER_RADIUS/4 or self.puck.speedMagnitude < 100:
+					
+					# A bit of aiming
+					vectorToGoal = self.lineToGoal.end - self.lineToGoal.start
 					step = (self.puck.position - self.striker.position)
 					step.scale_to_length(PUCK_RADIUS*3)
-					self.clampDesired(self.puck.position, step)
+					angleDiff = self.getAngleDifference(vectorToGoal, step)
+					step = step.rotate(angleDiff)
+					stepFromStriker = (self.puck.position - self.striker.position) + step
 
+					if abs(self.puck.position.y) > FIELD_HEIGHT/2 - STRIKER_RADIUS*2 and self.puck.position.x > STRIKER_RADIUS*2:	
+						self.setDesired(self.striker.position + stepFromStriker)
+					else:
+						self.clampDesired(self.striker.position, stepFromStriker)
 				
+
+
 				# Inaccurate shot
 				else:
 					perpendicularPoint = self.getPerpendicularPoint(self.striker.position, self.puck.trajectory[0])
@@ -85,7 +135,7 @@ class StrategyD(BaseStrategy):
 						step.scale_to_length(PUCK_RADIUS*3)
 						self.clampDesired(self.predictedPosition, step)
 
-				if self.isPuckBehingStriker() or self.badAttackingAngle(self.striker.desiredPosition):
+				if self.isPuckBehingStriker() or (self.badAttackingAngle(self.striker.desiredPosition) and abs(self.puck.position.y) < FIELD_HEIGHT/2 - STRIKER_RADIUS*2 and self.puck.position.x > STRIKER_RADIUS*2):
 					self.defendTrajectory()
 					self.subState = WAITING
 					self.state = DEFEND
@@ -93,20 +143,28 @@ class StrategyD(BaseStrategy):
 			else: 
 				self.subState = WAITING
 
+		elif case(STOP_PUCK):
+			self.slowDownPuck()
+			if self.puck.speedMagnitude < 100 or self.isPuckDangerous() or (self.puck.state == ACURATE and self.puck.vector.x > 0):
+				self.state = ATTACK
+
+
 		else:
 			pass
 
 
 	# Other functions
-
 	def defendGoalDefault(self):
-		if self.bounces and self.puck.state == ACURATE:
+		if self.bounces and self.puck.state == ACURATE and self.puck.vector.x < 0:
 			fromPoint = self.puck.trajectory[-1].start
+			# offset = (min(fromPoint.x, FIELD_WIDTH/2) - DEFENSE_LINE)/3
 		else:
 			fromPoint = self.puck.position
+			# offset = (fromPoint.x - DEFENSE_LINE)/10
+
 
 		a = Line(fromPoint, Vector2(0,0))
-		b = Line(gameMath.Vector2(DEFENSE_LINE, 0), gameMath.Vector2(DEFENSE_LINE, FIELD_HEIGHT))
+		b = Line(Vector2(DEFENSE_LINE, 0), Vector2(DEFENSE_LINE, FIELD_HEIGHT))
 		desiredPosition = self.getIntersectPoint(a, b)
 		if desiredPosition is not None:
 			self.setDesired(Vector2(desiredPosition))
@@ -125,6 +183,8 @@ class StrategyD(BaseStrategy):
 			if self.getPredictedPuckPosition(desiredPos, 1.5).x < desiredPos.x:
 				desiredPos = self.predictedPosition
 				isLate = True
+			else:
+				desiredPos = self.getBothCoordinates(self.puck.trajectory[0], x = min(self.predictedPosition.x, STOPPING_LINE))
 
 			if abs(desiredPos.y) > FIELD_HEIGHT/2 - PUCK_RADIUS:
 				if isLate:
@@ -132,7 +192,16 @@ class StrategyD(BaseStrategy):
 				else:
 					self.setDesired(self.puck.trajectory[0].end)
 			else:
+				if desiredPos.x > FIELD_WIDTH/4:
+					desiredPos = self.getBothCoordinates(self.puck.trajectory[0], x = FIELD_WIDTH/4)
 				self.setDesired(desiredPos)
+
+	def slowDownPuck(self):
+		if len(self.puck.trajectory) > 0:
+			desiredPos = self.getPerpendicularPoint(self.striker.position, self.puck.trajectory[0])
+			if self.getPredictedPuckPosition(desiredPos, 1.5).x > desiredPos.x:				
+				desiredPos = self.getBothCoordinates(self.puck.trajectory[0], x = max(DEFENSE_LINE * 2, min(DEFENSE_LINE * 2 +(self.predictedPosition.x - desiredPos.x)/4, STOPPING_LINE)))
+		self.setDesired(desiredPos)
 
 	def isPuckBehingStriker(self):
 		return self.striker.position.x > self.puck.position.x - PUCK_RADIUS
@@ -167,10 +236,21 @@ class StrategyD(BaseStrategy):
 
 	def badAttackingAngle(self, pos):
 		radius, attackAngle = (pos - self.striker.position).as_polar()
-		return abs(attackAngle) > 50
+		return abs(attackAngle) > 65
 
 	def canAttack(self):		
-		return not self.isPuckDangerous() and not self.isOutsideLimits(self.getPredictedPuckPosition(self.puck.position))
+		return not self.isPuckDangerous() and not self.isPuckOutsideLimits(self.getPredictedPuckPosition(self.puck.position))
+
+	def shouldStop(self):
+		desiredPos = self.getPerpendicularPoint(self.striker.position, self.puck.trajectory[0])
+		if self.puck.vector.y > 2 and random() < 0.7:
+			return True
+		elif self.getPredictedPuckPosition(desiredPos, 2).x < desiredPos.x:
+			if random() < 0.6:
+				return True
+		elif random() < 0.3:
+			return True
+		return False		
 
 	def moveToByPortion(self, toPos, portion=0.5):
 		stepVector = toPos - self.striker.desiredPosition

@@ -22,9 +22,9 @@ while running:
 	realTime = pygame.time.get_ticks()	
 	currentFps = clock.get_fps()
 	if not (currentFps == 0):
-		stepTime = min(1/currentFps, 0.02)
+		stepTime = min(1/currentFps, MIN_STEP_TIME)
 	else:
-		stepTime = 0.02
+		stepTime = MIN_STEP_TIME
 
 	if gameSpeed < 1:
 		stepTime *= gameSpeed

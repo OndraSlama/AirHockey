@@ -2,7 +2,7 @@ from Game.Strategy.StrategyStructs import *
 from Game.HelperClasses import Filter
 from Constants import *
 from numpy import sign
-import pygame.math as gameMath
+from pygame.math import Vector2
 
 class BaseStrategy():
 	def __init__(self):
@@ -24,17 +24,20 @@ class BaseStrategy():
 		self.historySize = 50
 		self.noOfBounces = 1
 		self.minSpeedLimit = 100
-		self.angletolerance = 70
-		self.lowAngletolerance = 8
+		self.highAngleTolerance = 70
+		self.mediumAngleTolerance = 15
+		self.lowAngleTolerance = 8
 		self.positionTolerance = 100
-		self.capturesWithBadAngle = 0
+		self.capturesWithBadLowAngle = 0
+		self.capturesWithBadMediumAngle = 0
 
 		# States
+
 		self.timeSinceLastCameraInput = 0
 		self.sameCameraInputsInRow = 0
 		self.previousErrorSide = 0
 		self.firstUsefull = 1
-		self.predictedPosition = gameMath.Vector2(0,0)
+		self.predictedPosition = Vector2(0,0)
 
 		# Filter
 		self.velocityFilter = Filter(3, 2, 1.5)
@@ -58,27 +61,38 @@ class BaseStrategy():
 		self.puck.state = ACURATE
 
 		currentStepVector = pos - self.puck.position
-		# currentVelocity = currentStepVector / self.puck.timeSinceCaptured
-		# currentPosition = gameMath.Vector2(pos)
-		errorAngle = currentStepVector.angle_to(self.puck.velocity)
-		if abs(errorAngle) > 180: errorAngle -= sign(errorAngle) * 360
+		errorAngle = self.getAngleDifference(currentStepVector, self.puck.velocity)
 
 		# Low angle condition
-		if abs(errorAngle) > self.lowAngletolerance and sign(errorAngle) == self.previousErrorSide:
-			self.capturesWithBadAngle += 1
-			if(self.capturesWithBadAngle > 4):
-				# print("Low angle condition.. 4 states -> useless")
+		if abs(errorAngle) > self.lowAngleTolerance and sign(errorAngle) == self.previousErrorSide:
+			self.capturesWithBadLowAngle += 1
+			if(self.capturesWithBadLowAngle > 4):
 				for i in range(4):
 					self.puckHistory[self.firstUsefull].state = USELESS
 					if self.firstUsefull > 1: self.firstUsefull -= 1
 		else:
-			self.capturesWithBadAngle = 0
+			self.capturesWithBadLowAngle = 0
 
 		self.previousErrorSide = sign(errorAngle)
 
+		# Medium angle condition
+		if abs(errorAngle) > self.mediumAngleTolerance and sign(errorAngle) == self.previousErrorSide:
+			self.capturesWithBadMediumAngle += 1
+			if(self.capturesWithBadMediumAngle > 3):
+				# print("Low angle condition.. 4 states -> useless")
+				self.capturesWithBadLowAngle = 0	
+				self.capturesWithBadMediumAngle = 0
+				for i in range(3, len(self.puckHistory)):
+					self.puckHistory[i].state = USELESS		
+
+		else:
+			self.capturesWithBadMediumAngle = 0
+
 		# Angle condition
-		if(abs(errorAngle) > self.angletolerance):
-			self.capturesWithBadAngle = 0					 
+		if(abs(errorAngle) > self.highAngleTolerance):
+			self.capturesWithBadLowAngle = 0	
+			self.capturesWithBadMediumAngle = 0	
+
 			# print("Angle condition: " + str(errorAngle))
 			for puck in self.puckHistory:
 				puck.state = USELESS
@@ -116,8 +130,8 @@ class BaseStrategy():
 		if abs(self.puck.speedMagnitude < self.minSpeedLimit):
 			self.puck.state = INACURATE
 
-		if abs(self.puck.vector.y) > 0.9:
-			self.puck.state = INACURATE
+		# if abs(self.puck.vector.y) > 0.9:
+		# 	self.puck.state = INACURATE
 
 		if self.firstUsefull < round(self.historySize/20):
 			self.puck.state = INACURATE
@@ -128,7 +142,7 @@ class BaseStrategy():
 		# Your strategy code here	
 
 	def setDesired(self, pos):
-		self.striker.desiredPosition = gameMath.Vector2(pos)
+		self.striker.desiredPosition = Vector2(pos)
 		self.limitMovement()
 
 	def clampDesired(self, fromPos, step):
@@ -147,7 +161,7 @@ class BaseStrategy():
 		if desiredPos.x > FIELD_WIDTH - STRIKER_RADIUS: 
 			desiredPos = self.getBothCoordinates(line, x = STRIKER_RADIUS)
 
-		self.striker.desiredPosition = desiredPos
+		self.setDesired(desiredPos)
 
 
 	def limitMovement(self):
@@ -171,11 +185,20 @@ class BaseStrategy():
 
 		return False
 
+	def isPuckOutsideLimits(self, pos):
+
+		if pos.x > STRIKER_AREA_WIDTH: return True
+		if abs(pos.y) > FIELD_HEIGHT/2 - PUCK_RADIUS*0.8: return True
+		if pos.x < PUCK_RADIUS*0.8: return True
+		if pos.x > FIELD_WIDTH - PUCK_RADIUS*0.8: return True
+
+		return False
+
 	def calculateTrajectory(self):
 		self.puck.trajectory = []		
 		yBound = (FIELD_HEIGHT / 2 - PUCK_RADIUS)
 		myLine = Line(self.puck.position, self.puck.position)
-		tempVector = gameMath.Vector2(self.puck.vector)
+		tempVector = Vector2(self.puck.vector)
 		
 		self.goalLineIntersection = -10000
 
@@ -256,7 +279,7 @@ class BaseStrategy():
 				else:
 					assert False
 					
-			return gameMath.Vector2(x,y)
+			return Vector2(x,y)
 		else:
 			# Parallel lines with same 'b' value must be the same line so they intersect
 			# everywhere in this case we return the start and end points of both lines
@@ -274,6 +297,11 @@ class BaseStrategy():
 				return None # p1,p2,p3,p4
 			else:
 				return None
+
+	def getAngleDifference(self, vector1, vetor2):
+		errorAngle = vector1.angle_to(vetor2)
+		if abs(errorAngle) > 180: errorAngle -= sign(errorAngle) * 360
+		return errorAngle
 
 	def getPointLineDist(self, point, line):
 		m = self.calculateGradient(line.start, line.end)
@@ -296,26 +324,28 @@ class BaseStrategy():
 				y = a*x + b
 		elif y is not None:
 			x = line.start.x
-		return gameMath.Vector2(x, y)
+		return Vector2(x, y)
 
 	def getPerpendicularPoint(self, pos, line):
 		vector = line.end - line.start
-		perpendiculatVector = gameMath.Vector2(-vector.y, vector.x)
+		perpendiculatVector = Vector2(-vector.y, vector.x)
 		secondPoint = pos + perpendiculatVector
 		return self.getIntersectPoint(line, Line(pos, secondPoint))
 
 	def getPredictedPuckPosition(self, strikerPos, reserve=1.3):
+		if self.puck.state == INACURATE:
+			return Vector2(self.puck.position)
 		if len(self.puck.trajectory) > 0:
 			dist = self.striker.position.distance_to(strikerPos)
 			time = dist/MAX_SPEED
-			vector = gameMath.Vector2(self.puck.vector) * (self.puck.speedMagnitude * time)
+			vector = Vector2(self.puck.vector) * (self.puck.speedMagnitude * time)
 			position =  self.puck.position + vector * reserve
 			if position.x < STRIKER_RADIUS and abs(position.y) < FIELD_HEIGHT - PUCK_RADIUS:
 				position.x = STRIKER_RADIUS
 				position.y = self.goalLineIntersection		
 			self.predictedPosition = position
 			return position
-		return gameMath.Vector2(0,0)
+		return Vector2(0,0)
 
 	def calculateGradient(self, p1, p2):  
 		# Ensure that the line is not vertical

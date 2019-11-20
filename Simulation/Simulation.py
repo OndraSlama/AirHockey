@@ -1,7 +1,7 @@
 from Constants import *
 from Simulation.Puck import Puck
 from Simulation.Striker import Striker
-import pygame.math as gameMath
+from pygame.math import Vector2
 from Functions import *
 from random import gauss, randrange
 
@@ -30,17 +30,17 @@ class Simulation():
 			
 
 	def rightMouseDown(self, mousePos):		
-		mouse = gameMath.Vector2((p2uX(mousePos[0]), p2uY(mousePos[1])))
+		mouse = Vector2((p2uX(mousePos[0]), p2uY(mousePos[1])))
 		self.puck.followPos(mouse)
 
 	def leftMouseDown(self, mousePos):
-		mouse = gameMath.Vector2((p2uX(mousePos[0]), p2uY(mousePos[1])))
+		mouse = Vector2((p2uX(mousePos[0]), p2uY(mousePos[1])))
 		self.strikers[1].desiredPosition = mouse
 
 	def middleMouseDown(self, mousePos):
-		mouse = gameMath.Vector2((p2uX(mousePos[0]), p2uY(mousePos[1])))
+		mouse = Vector2((p2uX(mousePos[0]), p2uY(mousePos[1])))
 		self.puck.goToPosition(mouse)
 	
 	def spawnPuck(self):
 		self.puck = Puck(self, FIELD_WIDTH/2, -FIELD_HEIGHT/2, PUCK_RADIUS, PUCK_MASS)
-		self.puck.velocity = gameMath.Vector2(randrange(-300, 300), randrange(300, 400))
+		self.puck.velocity = Vector2(randrange(-300, 300), randrange(300, 400))

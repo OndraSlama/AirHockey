@@ -8,7 +8,7 @@ from pygame.math import Vector2
 class Game():
 	def __init__(self):
 		self.simulation = Simulation(self)
-		self.camera = Camera(self, 90)
+		self.camera = Camera(self, 66)
 		self.leftStrategy = StrategyD.StrategyD()
 		self.rightStrategy = StrategyC.StrategyC()
 		self.score = [0, 0]
