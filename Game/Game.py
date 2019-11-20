@@ -1,7 +1,7 @@
 from Constants import *
 from Simulation.Simulation import Simulation
 from Game.Camera import Camera
-from Game.Strategy import StrategyA, StrategyB, StrategyC
+from Game.Strategy import StrategyA, StrategyB, StrategyC, StrategyD 
 from Game.Strategy.BaseStrategy import BaseStrategy
 from pygame.math import Vector2
 
@@ -9,8 +9,8 @@ class Game():
 	def __init__(self):
 		self.simulation = Simulation(self)
 		self.camera = Camera(self, 90)
-		self.leftStrategy = StrategyC.StrategyC()
-		self.rightStrategy = StrategyB.StrategyB()
+		self.leftStrategy = StrategyD.StrategyD()
+		self.rightStrategy = StrategyC.StrategyC()
 		self.score = [0, 0]
 		self.gameTime = 0
 

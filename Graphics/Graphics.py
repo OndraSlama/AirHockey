@@ -143,10 +143,10 @@ class Graphics:
 		# self.drawLine(line2.start, line2.end, YELLOW)
 		# self.drawCircle(point1, STRIKER_RADIUS/10, YELLOW)
 
-		line1 = Line(gameMath.Vector2(600, 0), gameMath.Vector2(600, 200))
-		point1 = strategy.getBothCoordinates(line1, y = FIELD_HEIGHT/2)
-		self.drawLine(line1.start, line1.end, YELLOW)
-		self.drawCircle(point1, STRIKER_RADIUS/10, YELLOW)
+		# line1 = Line(gameMath.Vector2(600, 0), gameMath.Vector2(600, 200))
+		# point1 = strategy.getBothCoordinates(line1, y = FIELD_HEIGHT/2)
+		# self.drawLine(line1.start, line1.end, YELLOW)
+		# self.drawCircle(point1, STRIKER_RADIUS/10, YELLOW)
 
 
 	def drawPuck(self, pos):
