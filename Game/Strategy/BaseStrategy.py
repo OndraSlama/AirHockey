@@ -34,6 +34,7 @@ class BaseStrategy():
 		self.sameCameraInputsInRow = 0
 		self.previousErrorSide = 0
 		self.firstUsefull = 1
+		self.predictedPosition = gameMath.Vector2(0,0)
 
 		# Filter
 		self.velocityFilter = Filter(3, 2, 1.5)
@@ -124,9 +125,30 @@ class BaseStrategy():
 	def process(self, stepTime):
 		self.stepTick(stepTime)
 
-		# Your strategy code here
+		# Your strategy code here	
 
-		self.limitMovement()	
+	def setDesired(self, pos):
+		self.striker.desiredPosition = gameMath.Vector2(pos)
+		self.limitMovement()
+
+	def clampDesired(self, fromPos, step):
+		desiredPos = fromPos + step
+		line = Line(fromPos, desiredPos)
+
+		if desiredPos.x > STRIKER_AREA_WIDTH:
+			desiredPos = self.getBothCoordinates(line, x = STRIKER_AREA_WIDTH)
+
+		if abs(desiredPos.y) > FIELD_HEIGHT/2 - STRIKER_RADIUS:
+			desiredPos = self.getBothCoordinates(line, y = sign(desiredPos.y) * FIELD_HEIGHT/2 - STRIKER_RADIUS)
+
+		if desiredPos.x < STRIKER_RADIUS: 
+			desiredPos = self.getBothCoordinates(line, x = STRIKER_RADIUS)
+
+		if desiredPos.x > FIELD_WIDTH - STRIKER_RADIUS: 
+			desiredPos = self.getBothCoordinates(line, x = STRIKER_RADIUS)
+
+		self.striker.desiredPosition = desiredPos
+
 
 	def limitMovement(self):
 		if self.striker.desiredPosition.x > STRIKER_AREA_WIDTH:
@@ -141,9 +163,15 @@ class BaseStrategy():
 		if self.striker.desiredPosition.x > FIELD_WIDTH - STRIKER_RADIUS: 
 			self.striker.desiredPosition.x = FIELD_WIDTH - STRIKER_RADIUS
 
+	def isOutsideLimits(self, pos):
+		if pos.x > STRIKER_AREA_WIDTH: return True
+		if abs(pos.y) > FIELD_HEIGHT/2 - STRIKER_RADIUS: return True
+		if pos.x < STRIKER_RADIUS: return True
+		if pos.x > FIELD_WIDTH - STRIKER_RADIUS: return True
 
-	def calculateTrajectory(self):		
-		
+		return False
+
+	def calculateTrajectory(self):
 		self.puck.trajectory = []		
 		yBound = (FIELD_HEIGHT / 2 - PUCK_RADIUS)
 		myLine = Line(self.puck.position, self.puck.position)
@@ -255,6 +283,39 @@ class BaseStrategy():
 			return abs(k + m*point.x - point.y) / (1 + m**2)**0.5
 		else:
 			return abs(line.start.x - point.x)
+
+	def getBothCoordinates(self, line, y=None, x = None):
+		a = self.calculateGradient(line.start, line.end)
+		b = self.calculateYAxisIntersect(line.start, a)
+
+		if a is not None:
+			if y is not None:
+				if not a==0:
+					x = (b - y)/a				
+			elif x is not None:
+				y = a*x + b
+		elif y is not None:
+			x = line.start.x
+		return gameMath.Vector2(x, y)
+
+	def getPerpendicularPoint(self, pos, line):
+		vector = line.end - line.start
+		perpendiculatVector = gameMath.Vector2(-vector.y, vector.x)
+		secondPoint = pos + perpendiculatVector
+		return self.getIntersectPoint(line, Line(pos, secondPoint))
+
+	def getPredictedPuckPosition(self, strikerPos, reserve=1.3):
+		if len(self.puck.trajectory) > 0:
+			dist = self.striker.position.distance_to(strikerPos)
+			time = dist/MAX_SPEED
+			vector = gameMath.Vector2(self.puck.vector) * (self.puck.speedMagnitude * time)
+			position =  self.puck.position + vector * reserve
+			if position.x < STRIKER_RADIUS and abs(position.y) < FIELD_HEIGHT - PUCK_RADIUS:
+				position.x = STRIKER_RADIUS
+				position.y = self.goalLineIntersection		
+			self.predictedPosition = position
+			return position
+		return gameMath.Vector2(0,0)
 
 	def calculateGradient(self, p1, p2):  
 		# Ensure that the line is not vertical

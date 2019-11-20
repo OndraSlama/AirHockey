@@ -36,6 +36,10 @@ class Simulation():
 	def leftMouseDown(self, mousePos):
 		mouse = gameMath.Vector2((p2uX(mousePos[0]), p2uY(mousePos[1])))
 		self.strikers[1].desiredPosition = mouse
+
+	def middleMouseDown(self, mousePos):
+		mouse = gameMath.Vector2((p2uX(mousePos[0]), p2uY(mousePos[1])))
+		self.puck.goToPosition(mouse)
 	
 	def spawnPuck(self):
 		self.puck = Puck(self, FIELD_WIDTH/2, -FIELD_HEIGHT/2, PUCK_RADIUS, PUCK_MASS)

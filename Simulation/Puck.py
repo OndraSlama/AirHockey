@@ -19,11 +19,17 @@ class Puck(Body):
 		self.bounce(BORDER_RESTITUTION, FIELD_HEIGHT/2, -FIELD_HEIGHT/2, 0, FIELD_WIDTH, GOAL_SPAN)	
 
 	def moveIfStuck(self):
-		if self.velocity.x > 10 or self.velocity.y > 10:
+		if abs(self.velocity.x) > 5 or abs(self.velocity.y) > 5:
 			self.lastMovement = self.simulation.game.gameTime
 
 		if self.simulation.game.gameTime - self.lastMovement > 2:
 			direction = sign(self.position.x - FIELD_WIDTH/2)
 			if direction == 0: direction = 1
 			self.applyForce(Vector2(direction*randrange(500000, 600000), randrange(-300000, 300000)))
+
+	def goToPosition(self, pos):
+		self.position = pos
+		self.velocity = Vector2(0,0)
+		self.acceleration = Vector2(0,0)
+		self.lastMovement = self.simulation.game.gameTime
 

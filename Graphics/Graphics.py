@@ -88,6 +88,8 @@ class Graphics:
 	#			 pygame.draw.rect(self.window, BLUE, rect, 1)
 
 	def drawCamera(self, pos):
+		self.drawLine((0, pos.y), (FIELD_WIDTH, pos.y), DIMMED_RED)
+		self.drawLine((pos.x, FIELD_HEIGHT/2), (pos.x, -FIELD_HEIGHT/2), DIMMED_RED)
 		pygame.gfxdraw.aacircle(self.window, u2pX(pos.x), u2pY(pos.y), u2pDist(PUCK_RADIUS), RED)
 
 	def drawHistory(self, history):
@@ -110,7 +112,7 @@ class Graphics:
 		# draw desired position
 		self.drawCircle(strategy.striker.desiredPosition, STRIKER_RADIUS/10, GREY)
 		# draw predicted
-		# self.drawCircle(strategy.predictedPosition, STRIKER_RADIUS/10, YELLOW)
+		self.drawCircle(strategy.predictedPosition, STRIKER_RADIUS/10, YELLOW)
 
 		# DEBUG
 		# if len(strategy.puck.trajectory) > 0:
@@ -141,10 +143,13 @@ class Graphics:
 		# self.drawLine(line2.start, line2.end, YELLOW)
 		# self.drawCircle(point1, STRIKER_RADIUS/10, YELLOW)
 
+		line1 = Line(gameMath.Vector2(600, 0), gameMath.Vector2(600, 200))
+		point1 = strategy.getBothCoordinates(line1, y = FIELD_HEIGHT/2)
+		self.drawLine(line1.start, line1.end, YELLOW)
+		self.drawCircle(point1, STRIKER_RADIUS/10, YELLOW)
+
 
 	def drawPuck(self, pos):
-		self.drawLine((0, pos.y), (FIELD_WIDTH, pos.y), DIMMED_RED)
-		self.drawLine((pos.x, FIELD_HEIGHT/2), (pos.x, -FIELD_HEIGHT/2), DIMMED_RED)
 		self.drawCircle(pos, PUCK_RADIUS, RED)
 		self.drawCircle(pos, PUCK_RADIUS * 0.8, DIMMED_RED)
 		self.drawCircle(pos, PUCK_RADIUS * 0.7, RED)

@@ -14,6 +14,7 @@ lastTextUpdate = 0
 running = True
 realTime = 0
 leftMouseDown = False
+middleMouseDown = False
 rightMouseDown = False
 gameSpeed = 1
 while running:
@@ -37,6 +38,8 @@ while running:
 
 			if event.button == 1:
 				leftMouseDown = True
+			if event.button == 2:
+				middleMouseDown = True
 			if event.button == 3:
 				rightMouseDown = True
 			if event.button == 4:
@@ -55,6 +58,7 @@ while running:
 
 		if event.type == pygame.MOUSEBUTTONUP:
 			leftMouseDown = False
+			middleMouseDown = False
 			rightMouseDown = False
 
 		if event.type == pygame.MOUSEMOTION:
@@ -72,6 +76,7 @@ while running:
 
 	for i in range(max(1, gameSpeed)):
 		if leftMouseDown: game.simulation.leftMouseDown(pygame.mouse.get_pos())
+		if middleMouseDown: game.simulation.middleMouseDown(pygame.mouse.get_pos())
 		if rightMouseDown: game.simulation.rightMouseDown(pygame.mouse.get_pos())
 		game.update(stepTime)
 	
