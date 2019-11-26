@@ -44,8 +44,8 @@ class Body():
 	def followPos(self, position):
 		vel = 20*(position - self.position)
 
-		if vel.magnitude() > 3000:
-			vel.scale_to_length(3000)
+		if vel.magnitude() > 10000:
+			vel.scale_to_length(10000)
 
 		acc = (vel - self.velocity)/self.simulation.stepTime	
 		self.acceleration = acc

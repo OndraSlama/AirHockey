@@ -119,12 +119,10 @@ class StrategyD(BaseStrategy):
 					else:
 						self.clampDesired(self.striker.position, stepFromStriker)
 				
-
-
 				# Inaccurate shot
 				else:
 					perpendicularPoint = self.getPerpendicularPoint(self.striker.position, self.puck.trajectory[0])
-					self.getPredictedPuckPosition(perpendicularPoint)
+					self.getPredictedPuckPosition(perpendicularPoint, 0.8)
 					if perpendicularPoint.x < self.predictedPosition.x:
 						step = (self.predictedPosition - self.striker.position)
 						step.scale_to_length(PUCK_RADIUS*3)
@@ -147,8 +145,6 @@ class StrategyD(BaseStrategy):
 			self.slowDownPuck()
 			if self.puck.speedMagnitude < 100 or self.isPuckDangerous() or (self.puck.state == ACURATE and self.puck.vector.x > 0):
 				self.state = ATTACK
-
-
 		else:
 			pass
 
