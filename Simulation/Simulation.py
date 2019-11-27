@@ -6,13 +6,17 @@ from Functions import *
 from random import gauss, randrange
 
 class Simulation():
-	def __init__(self, game):
+	def __init__(self, game, mode):
 		self.game = game
 		self.stepTime = MIN_STEP_TIME
 		self.strikers = []
 		self.puck = None
-		self.strikers.append(Striker(self, 100,0, STRIKER_RADIUS, STRIKER_MASS))
-		self.strikers.append(Striker(self, FIELD_WIDTH - 100, 0, STRIKER_RADIUS, STRIKER_MASS))
+		self.strikers.append(Striker(self, 100,0, STRIKER_RADIUS, STRIKER_MASS, mode="AI"))
+		if mode == "vsAI" or mode == "vsNN":
+			self.strikers.append(Striker(self, FIELD_WIDTH - 100, 0, STRIKER_RADIUS, STRIKER_MASS, mode="PLAYER"))
+		else:
+			self.strikers.append(Striker(self, FIELD_WIDTH - 100, 0, STRIKER_RADIUS, STRIKER_MASS, mode="AI"))
+
 		self.spawnPuck()
 
 	def step(self, stepTime):
@@ -36,6 +40,8 @@ class Simulation():
 	def leftMouseDown(self, mousePos):
 		mouse = Vector2((p2uX(mousePos[0]), p2uY(mousePos[1])))
 		self.strikers[1].desiredPosition = mouse
+		if self.strikers[1].desiredPosition.x < FIELD_WIDTH/2:
+			self.strikers[1].desiredPosition.x = FIELD_WIDTH/2
 
 	def middleMouseDown(self, mousePos):
 		mouse = Vector2((p2uX(mousePos[0]), p2uY(mousePos[1])))

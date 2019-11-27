@@ -6,16 +6,33 @@ from Game.Strategy.BaseStrategy import BaseStrategy
 from pygame.math import Vector2
 
 class Game():
-	def __init__(self):
-		self.simulation = Simulation(self)
+	def __init__(self, mode):
+		self.simulation = Simulation(self, mode)
 		self.camera = Camera(self, 66)
 		self.leftStrategy = StrategyD.StrategyD()
-		self.rightStrategy = StrategyC.StrategyC()
+		if mode == "vsAI" or mode == "vsNN":
+			self.rightStrategy = BaseStrategy()
+		else:
+			self.rightStrategy = StrategyD.StrategyD()
 		self.score = [0, 0]
 		self.gameTime = 0
+		self.gameSpeed = 1
+		self.stepTime = MIN_STEP_TIME
+		self.mousePosition = None
+		self.leftMouseDown = False
+		self.middleMouseDown = False
+		self.rightMouseDown = False
 
-	def update(self, stepTime):
+	def update(self):
+		stepTime = self.stepTime
+		mousePos = self.mousePosition
 		self.gameTime += stepTime
+		# print(stepTime)
+
+		if self.leftMouseDown: self.simulation.leftMouseDown(mousePos)
+		if self.middleMouseDown: self.simulation.middleMouseDown(mousePos)
+		if self.rightMouseDown: self.simulation.rightMouseDown(mousePos)
+
 		self.simulation.step(stepTime)
 		self.camera.update()
 
@@ -34,6 +51,8 @@ class Game():
 		self.simulation.strikers[1].desiredPosition = Vector2(FIELD_WIDTH - self.rightStrategy.striker.desiredPosition.x, -self.rightStrategy.striker.desiredPosition.y)
 
 		self.checkGoal()
+
+		return self
 
 	def checkGoal(self):
 		if self.simulation.puck.position.x < 0:

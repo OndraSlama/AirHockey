@@ -138,7 +138,8 @@ class BaseStrategy():
 
 	def process(self, stepTime):
 		self.stepTick(stepTime)
-
+		self.setDesired(self.striker.position)
+		
 		# Your strategy code here	
 
 	def setDesired(self, pos):
