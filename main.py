@@ -7,7 +7,7 @@ from multiprocessing import Pool
 
 def main():
 
-	# BASIC SETTINGS, FOR MORE SEE Constants.py -----------------------
+	# Basic settings. For more, see: Constants.py --------------------
 
 	# NE = Neuroevoluting Neural network
 	# AI = 2 hardcoded strategies againts each other
@@ -15,8 +15,8 @@ def main():
 	# vsAI = Hardcoded strategy vs player
 	MODE = "vsAI"
 
-	MULTIPROCESS = False
-	NUMBER_OF_GAMES = 50
+	MULTIPROCESS = True
+	NUMBER_OF_GAMES = 10
 
 	# ----------------------------------------------------------------
 
@@ -152,7 +152,7 @@ def main():
 			graphics.createText("Captured puck speed: " + str(round(game.leftStrategy.puck.speedMagnitude, 2)))
 			graphics.createText("Dangerous puck: " + str(game.leftStrategy.isPuckDangerous()))
 			
-			graphics.createText("Showing game #" + str(currentGame))
+			graphics.createText("Showing game: " + str(currentGame + 1) + "/"+ str(NUMBER_OF_GAMES))
 
 			lastTextUpdate = realTime
 		
