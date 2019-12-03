@@ -1,5 +1,6 @@
 from Constants import *
 from Simulation.Simulation import Simulation
+from Game.Player import Player
 from Game.Camera import Camera
 from Game.Strategy import StrategyA, StrategyB, StrategyC, StrategyD 
 from Game.Strategy.BaseStrategy import BaseStrategy
@@ -9,12 +10,19 @@ class Game():
 	def __init__(self, mode):
 		self.simulation = Simulation(self, mode)
 		self.camera = Camera(self, 66)
-		self.leftStrategy = StrategyD.StrategyD()
+		
+		# Players
+		self.players = []
+		self.players.append(Player(self, StrategyD.StrategyD(), "left"))
 		if mode == "vsAI" or mode == "vsNN":
-			self.rightStrategy = BaseStrategy()
+			self.players.append(Player(self, BaseStrategy(), "right"))
 		else:
-			self.rightStrategy = StrategyD.StrategyD()
-		self.score = [0, 0]
+			self.players.append(Player(self, StrategyD.StrategyD(), "right"))
+
+		self.players[0].opponent = self.players[1]
+		self.players[1].opponent = self.players[0]
+
+		# States
 		self.gameTime = 0
 		self.gameSpeed = 1
 		self.stepTime = MIN_STEP_TIME
@@ -36,29 +44,27 @@ class Game():
 		self.simulation.step(stepTime)
 		self.camera.update()
 
-		self.leftStrategy.striker.position = Vector2(self.simulation.strikers[0].position)
-		self.rightStrategy.striker.position = Vector2(FIELD_WIDTH - self.simulation.strikers[1].position.x, -self.simulation.strikers[1].position.y)
+		for i in range(len(self.players)):
+			self.players[i].updatePosition(self.simulation.strikers[i].position)
+			if self.camera.newData:
+				self.players[i].cameraInput(self.camera.puckPosition)
 
-		if self.camera.newData:
-			self.leftStrategy.cameraInput(Vector2(self.camera.puckPosition))
-			self.rightStrategy.cameraInput(Vector2(FIELD_WIDTH - self.camera.puckPosition.x, -self.camera.puckPosition.y))
-			self.camera.newData = False
+			self.players[i].update(stepTime)
 
-		self.leftStrategy.process(stepTime)
-		self.rightStrategy.process(stepTime)
+			self.simulation.strikers[i].desiredPosition = self.players[i].getDesiredPosition()
 
-		self.simulation.strikers[0].desiredPosition = Vector2(self.leftStrategy.striker.desiredPosition)
-		self.simulation.strikers[1].desiredPosition = Vector2(FIELD_WIDTH - self.rightStrategy.striker.desiredPosition.x, -self.rightStrategy.striker.desiredPosition.y)
-
+		self.camera.newData = False		
 		self.checkGoal()
 
 		return self
 
 	def checkGoal(self):
 		if self.simulation.puck.position.x < 0:
-			self.score[1] += 1
+			self.players[1].goals += 1
+			self.players[1].score += POINTS_PER_GOAL
 			self.simulation.spawnPuck()
 
 		if self.simulation.puck.position.x > FIELD_WIDTH:
-			self.score[0] += 1
+			self.players[0].goals += 1
+			self.players[0].score += POINTS_PER_GOAL
 			self.simulation.spawnPuck()

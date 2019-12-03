@@ -15,8 +15,8 @@ def main():
 	# vsAI = Hardcoded strategy vs player
 	MODE = "vsAI"
 
-	MULTIPROCESS = True
-	NUMBER_OF_GAMES = 10
+	MULTIPROCESS = False
+	NUMBER_OF_GAMES = POPULATION_SIZE
 
 	# ----------------------------------------------------------------
 
@@ -129,7 +129,7 @@ def main():
 		graphics.drawPuck(game.simulation.puck.position)
 		graphics.drawCamera(game.camera.puckPosition)
 		graphics.drawHistory(game.camera.positionHistory)
-		graphics.drawStrategy(game.leftStrategy)
+		graphics.drawStrategy(game.players[0].strategy)
 
 		for striker in game.simulation.strikers:
 			graphics.drawStriker(striker.position, GREY)
@@ -141,18 +141,28 @@ def main():
 			graphics.createText("Air Hockey", size=40, alignment="center")
 			graphics.createText("Game simulation", line=2, alignment="center")
 
-			graphics.createText(str(game.score[0]) + ":" + str(game.score[1]), size=60, line=3, alignment="center")
+			graphics.createText(str(game.players[0].goals) + ":" + str(game.players[1].goals), size=60, line=3, alignment="center")
 
-			graphics.createText(".........................................", line=6, alignment="center")
-			graphics.createText("FPS: " + str(round(currentFps, 2)), line=8)
+			graphics.createText("·" * 50, line=6, alignment="center")
+			graphics.createText("FPS: " + str(round(currentFps, 2)))
 			graphics.createText("Step time: " + str(round(game.simulation.stepTime, 4)))		
 			roundDigit = max(min(round(.5/gameSpeed), 3), 1)
 			graphics.createText("Game speed: " + str(round(gameSpeed, roundDigit)))
 			graphics.createText("Real puck speed: " + str(round(game.simulation.puck.velocity.magnitude(), 2)))
-			graphics.createText("Captured puck speed: " + str(round(game.leftStrategy.puck.speedMagnitude, 2)))
-			graphics.createText("Dangerous puck: " + str(game.leftStrategy.isPuckDangerous()))
-			
+			graphics.createText("Captured puck speed: " + str(round(game.players[0].strategy.puck.speedMagnitude, 2)))
 			graphics.createText("Showing game: " + str(currentGame + 1) + "/"+ str(NUMBER_OF_GAMES))
+
+			graphics.createText(" ")
+			graphics.createText("Left player")
+			graphics.createText("‾" * 10)
+			graphics.createText("Score: " + str(round(game.players[0].score, 2)))
+			
+			graphics.createText(" ")
+			graphics.createText("Right player")
+			graphics.createText("‾" * 10)
+			graphics.createText("Score: " + str(round(game.players[1].score, 2)))
+			# graphics.createText("Dangerous puck: " + str(game.players[0].strategy.isPuckDangerous()))
+			
 
 			lastTextUpdate = realTime
 		

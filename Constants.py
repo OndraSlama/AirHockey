@@ -5,7 +5,7 @@ from math import floor
 FIELD_WIDTH = 1000
 FIELD_HEIGHT = 600
 GOAL_SPAN = 200
-STRIKER_AREA_WIDTH = 400
+STRIKER_AREA_WIDTH = 470
 
 # Objects sizes in game units
 PUCK_RADIUS = 20
@@ -29,6 +29,16 @@ VELOCITY_DAMP = 0.995
 # Striker limitations
 MAX_ACCELERATION = 10000
 MAX_SPEED = 1000
+
+# ---------------- GA ----------------
+
+POPULATION_SIZE = 50
+
+# Fitness
+WINNING_POINTS_PER_SEC = .2
+POINTS_PER_GOAL = 100
+POINTS_PER_HIT = 1
+POINTS_PER_GOOD_HIT = 5
 
 # ------------- GRAPHICS -------------
 # Color definitions
