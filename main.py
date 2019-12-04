@@ -17,6 +17,7 @@ def main():
 
 	MULTIPROCESS = True
 	NUMBER_OF_GAMES = POPULATION_SIZE
+	NUMBER_OF_GAMES = 12
 	INVARIANT_SIMULATION = True
 
 	# ----------------------------------------------------------------
@@ -154,7 +155,8 @@ def main():
 			graphics.createText("FPS: " + str(round(currentFps, 2)))
 			graphics.createText("Step time: " + str(round(game.simulation.stepTime, 4)))		
 			roundDigit = max(min(round(.5/gameSpeed), 3), 1)
-			graphics.createText("Game speed: " + str(round(gameSpeed, roundDigit)))
+			graphics.createText("Game steps per frame: " + str(round(gameSpeed, roundDigit)))
+			graphics.createText("Game speed: " + str(round((gameSpeed*stepTime) * currentFps, roundDigit)))
 			graphics.createText("Real puck speed: " + str(round(game.simulation.puck.velocity.magnitude(), 2)))
 			graphics.createText("Captured puck speed: " + str(round(game.players[0].strategy.puck.speedMagnitude, 2)))
 			graphics.createText("Showing game: " + str(currentGame + 1) + "/"+ str(NUMBER_OF_GAMES))
