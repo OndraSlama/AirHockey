@@ -17,7 +17,7 @@ class Game():
 		if mode == "vsAI" or mode == "vsNN":
 			self.players.append(Player(self, BaseStrategy(), "right"))
 		else:
-			self.players.append(Player(self, StrategyD.StrategyD(), "right"))
+			self.players.append(Player(self, StrategyB.StrategyB(), "right"))
 
 		self.players[0].opponent = self.players[1]
 		self.players[1].opponent = self.players[0]

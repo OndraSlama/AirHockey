@@ -16,15 +16,15 @@ class Striker(Body):
 
 	def calculateMovement(self):	
 
-		gain = (MAX_ACCELERATION/600)
+		gain = (MAX_ACCELERATION/700)
 		vel =  gain*(self.desiredPosition - self.position)
 
 		if self.mode == "AI":
 			maxSpeed = MAX_SPEED
 			maxAcc = MAX_ACCELERATION
 		else:
-			maxSpeed = MAX_SPEED*50
-			maxAcc = MAX_ACCELERATION*500
+			maxSpeed = MAX_SPEED#*50
+			maxAcc = MAX_ACCELERATION#*500
 
 		if vel.magnitude() > maxSpeed:
 			vel.scale_to_length(maxSpeed)

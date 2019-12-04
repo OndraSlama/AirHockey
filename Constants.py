@@ -17,7 +17,7 @@ STOPPING_LINE = FIELD_WIDTH/6
 CLOSE_DISTANCE = PUCK_RADIUS # what is considered to be "close enough"
 
 # ------------- SIMULATION -------------
-MIN_STEP_TIME = 0.015
+MIN_STEP_TIME = 0.012
 PUCK_MASS = 20
 STRIKER_MASS = 700
 BORDER_RESTITUTION = 0.7

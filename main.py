@@ -13,10 +13,11 @@ def main():
 	# AI = 2 hardcoded strategies againts each other
 	# vsNN = Learned Neural network vs player
 	# vsAI = Hardcoded strategy vs player
-	MODE = "vsAI"
+	MODE = "AI"
 
-	MULTIPROCESS = False
+	MULTIPROCESS = True
 	NUMBER_OF_GAMES = POPULATION_SIZE
+	INVARIANT_SIMULATION = True
 
 	# ----------------------------------------------------------------
 
@@ -45,13 +46,19 @@ def main():
 		# ----------- TIME SYNCHRONIZATION ------------
 		realTime = pygame.time.get_ticks()	
 		currentFps = clock.get_fps()
-		if not (currentFps == 0):
-			stepTime = min(1/currentFps, MIN_STEP_TIME)
-		else:
-			stepTime = MIN_STEP_TIME
 
-		if gameSpeed < 1:
-			stepTime *= gameSpeed
+		if INVARIANT_SIMULATION:
+			desiredFps = min(round(1/MIN_STEP_TIME * gameSpeed), 1/MIN_STEP_TIME)
+			stepTime = MIN_STEP_TIME
+		else:
+			desiredFps = 200
+			if not (currentFps == 0):				
+				stepTime = min(1/currentFps, MIN_STEP_TIME)
+			else:
+				stepTime = MIN_STEP_TIME
+
+			if gameSpeed < 1:
+				stepTime *= gameSpeed
 
 		# ----------------- EVENTS --------------------
 		for event in pygame.event.get():
@@ -153,13 +160,13 @@ def main():
 			graphics.createText("Showing game: " + str(currentGame + 1) + "/"+ str(NUMBER_OF_GAMES))
 
 			graphics.createText(" ")
-			graphics.createText("Left player")
-			graphics.createText("‾" * 10)
+			graphics.createText("Left player:")
+			graphics.createText("‾‾‾‾‾‾‾‾‾‾")
 			graphics.createText("Score: " + str(round(game.players[0].score, 2)))
 			
 			graphics.createText(" ")
-			graphics.createText("Right player")
-			graphics.createText("‾" * 10)
+			graphics.createText("Right player:")
+			graphics.createText("‾‾‾‾‾‾‾‾‾‾‾‾")
 			graphics.createText("Score: " + str(round(game.players[1].score, 2)))
 			# graphics.createText("Dangerous puck: " + str(game.players[0].strategy.isPuckDangerous()))
 			
@@ -170,7 +177,7 @@ def main():
 		graphics.update()
 
 		# Set fps
-		clock.tick(200)
+		clock.tick(desiredFps)
 
 	if MULTIPROCESS:
 		pool.close()
