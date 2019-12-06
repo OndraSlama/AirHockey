@@ -15,23 +15,21 @@ def main():
 	# vsAI = Hardcoded strategy vs player
 	MODE = "AI"
 
-	MULTIPROCESS = True
+	MULTIPROCESS = False
 	NUMBER_OF_GAMES = POPULATION_SIZE
-	NUMBER_OF_GAMES = 12
+	NUMBER_OF_GAMES = 1
 	INVARIANT_SIMULATION = True
-
 	# ----------------------------------------------------------------
 
 	# Init phase
+	if MODE == "vsNN" or MODE == "vsAI": NUMBER_OF_GAMES = 1 
+
 	pygame.init()	
 	clock = pygame.time.Clock()
 	graphics = Graphics(WIDTH, HEIGHT)
-
-	if MODE == "vsNN" or MODE == "vsAI": NUMBER_OF_GAMES = 1 
 	games = [Game(MODE) for i in range(NUMBER_OF_GAMES)]
-
+	
 	if MULTIPROCESS: pool = Pool()
-
 
 	# Loop variables
 	running = True
@@ -157,6 +155,7 @@ def main():
 			roundDigit = max(min(round(.5/gameSpeed), 3), 1)
 			graphics.createText("Game steps per frame: " + str(round(gameSpeed, roundDigit)))
 			graphics.createText("Game speed: " + str(round((gameSpeed*stepTime) * currentFps, roundDigit)))
+			graphics.createText("Game time: " + str(round(game.gameTime)))
 			graphics.createText("Real puck speed: " + str(round(game.simulation.puck.velocity.magnitude(), 2)))
 			graphics.createText("Captured puck speed: " + str(round(game.players[0].strategy.puck.speedMagnitude, 2)))
 			graphics.createText("Showing game: " + str(currentGame + 1) + "/"+ str(NUMBER_OF_GAMES))
@@ -193,6 +192,6 @@ def work(game):
 
 	return game
 
-if __name__ == "__main__":
+if __name__ == "__main__":	
 	main()
 	

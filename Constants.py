@@ -30,8 +30,11 @@ VELOCITY_DAMP = 0.995
 MAX_ACCELERATION = 10000
 MAX_SPEED = 1000
 
-# ---------------- GA ----------------
+# -------------- RULES --------------
+GOAL_LIMIT = 3
+TIME_LIMIT = 120 #seconds
 
+# ---------------- GA ----------------
 POPULATION_SIZE = 50
 
 # Fitness

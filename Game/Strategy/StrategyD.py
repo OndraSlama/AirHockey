@@ -21,6 +21,7 @@ class StrategyD(BaseStrategy):
 		self.lineToGoal = Line()
 		self.state = DEFEND
 		self.subState = DEFEND
+		self.lastPuckStop = 0
 
 	def process(self, stepTime):
 		self.stepTick(stepTime)	 
@@ -62,40 +63,37 @@ class StrategyD(BaseStrategy):
 					self.subState = ATTACK_INIT
 			
 			elif subCase(ATTACK_INIT):
+				# wait a bit for decision
+				if self.gameTime > self.lastPuckStop + 0.1:
+					randomNum = random()
+					chosen = False
 
-				randomNum = random()
-				chosen = False
+					if not self.puck.state == ACURATE and self.puck.speedMagnitude < 20: # try wall bounce only if puck is almost still
+						topBounce = Line(self.predictedPosition, Vector2(FIELD_WIDTH*0.9, FIELD_HEIGHT))
+						vectorFromGoal = topBounce.start - topBounce.end
+						vectorFromGoal.scale_to_length(STRIKER_RADIUS*6)
+						if not self.striker.position.y < -FIELD_HEIGHT*0.3 and randomNum < 0.4:
+							self.lineToGoal = topBounce
+							finalVector = vectorFromGoal
+							chosen = True
+						bottomBounce = Line(self.predictedPosition, Vector2(FIELD_WIDTH*0.9, FIELD_HEIGHT))
+						vectorFromGoal = bottomBounce.start - bottomBounce.end
+						vectorFromGoal.scale_to_length(STRIKER_RADIUS*6)			
+						if not self.striker.position.y > FIELD_HEIGHT*0.3 - STRIKER_RADIUS*4 and randomNum > 0.6:
+							self.lineToGoal = bottomBounce
+							finalVector = vectorFromGoal
+							chosen = True
 
-				# print(randomNum)
+					if not chosen:
+						center = Line(self.predictedPosition, Vector2(FIELD_WIDTH*1.15, 0))
+						vectorFromGoal = center.start - center.end
+						vectorFromGoal.scale_to_length(STRIKER_RADIUS*6)		
+						finalVector = vectorFromGoal	
+						self.lineToGoal = center
+						# print("center")
 
-				topBounce = Line(self.predictedPosition, Vector2(FIELD_WIDTH*0.9, FIELD_HEIGHT))
-				vectorFromGoal = topBounce.start - topBounce.end
-				vectorFromGoal.scale_to_length(STRIKER_RADIUS*6)
-				if not self.striker.position.y < -FIELD_HEIGHT*0.3 and randomNum < 0.3:
-					self.lineToGoal = topBounce
-					finalVector = vectorFromGoal
-					chosen = True
-					# print("top")
-
-				bottomBounce = Line(self.predictedPosition, Vector2(FIELD_WIDTH*0.9, -FIELD_HEIGHT))
-				vectorFromGoal = bottomBounce.start - bottomBounce.end
-				vectorFromGoal.scale_to_length(STRIKER_RADIUS*6)			
-				if not self.striker.position.y > FIELD_HEIGHT*0.3 - STRIKER_RADIUS*4 and randomNum > 0.7:
-					self.lineToGoal = bottomBounce
-					finalVector = vectorFromGoal
-					chosen = True
-					# print("bottom")
-
-				if not chosen:
-					center = Line(self.predictedPosition, Vector2(FIELD_WIDTH*1.15, 0))
-					vectorFromGoal = center.start - center.end
-					vectorFromGoal.scale_to_length(STRIKER_RADIUS*6)		
-					finalVector = vectorFromGoal	
-					self.lineToGoal = center
-					# print("center")
-
-				self.setDesired(self.predictedPosition + finalVector)
-				self.subState = ATTACK_PREPARE_POSITION
+					self.setDesired(self.predictedPosition + finalVector)
+					self.subState = ATTACK_PREPARE_POSITION
 
 			elif subCase(ATTACK_PREPARE_POSITION):
 				if self.striker.position.distance_squared_to(self.striker.desiredPosition) < CLOSE_DISTANCE**2 or self.isPuckDangerous() or self.isInGoodPosition(self.lineToGoal):
@@ -145,6 +143,7 @@ class StrategyD(BaseStrategy):
 			self.slowDownPuck()
 			if self.puck.speedMagnitude < 100 or self.isPuckDangerous() or (self.puck.state == ACURATE and self.puck.vector.x > 0):
 				self.state = ATTACK
+				self.lastPuckStop = self.gameTime
 		else:
 			pass
 
@@ -196,7 +195,7 @@ class StrategyD(BaseStrategy):
 		if len(self.puck.trajectory) > 0:
 			desiredPos = self.getPerpendicularPoint(self.striker.position, self.puck.trajectory[0])
 			if self.getPredictedPuckPosition(desiredPos, 1.5).x > desiredPos.x:				
-				desiredPos = self.getBothCoordinates(self.puck.trajectory[0], x = max(DEFENSE_LINE * 2, min(DEFENSE_LINE * 2 +(self.predictedPosition.x - desiredPos.x)/4, STOPPING_LINE)))
+				desiredPos = self.getBothCoordinates(self.puck.trajectory[0], x = max(DEFENSE_LINE * 2, min(DEFENSE_LINE * 2 + (self.predictedPosition.x - desiredPos.x)/2, STOPPING_LINE)))
 		self.setDesired(desiredPos)
 
 	def isPuckBehingStriker(self):

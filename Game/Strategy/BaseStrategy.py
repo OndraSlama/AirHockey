@@ -32,7 +32,7 @@ class BaseStrategy():
 		self.capturesWithBadMediumAngle = 0
 
 		# States
-
+		self.gameTime = 0
 		self.timeSinceLastCameraInput = 0
 		self.sameCameraInputsInRow = 0
 		self.previousErrorSide = 0
@@ -54,6 +54,7 @@ class BaseStrategy():
 		self.calculateTrajectory()	
 
 	def stepTick(self, stepTime):
+		self.gameTime += stepTime
 		for puck in self.puckHistory:
 			puck.timeSinceCaptured += stepTime
 

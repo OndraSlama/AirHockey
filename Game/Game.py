@@ -21,8 +21,9 @@ class Game():
 
 		self.players[0].opponent = self.players[1]
 		self.players[1].opponent = self.players[0]
-
+		
 		# States
+		self.gameDone = False
 		self.gameTime = 0
 		self.gameSpeed = 1
 		self.stepTime = MIN_STEP_TIME
@@ -35,26 +36,28 @@ class Game():
 		stepTime = self.stepTime
 		mousePos = self.mousePosition
 		self.gameTime += stepTime
-		# print(stepTime)
 
-		if self.leftMouseDown: self.simulation.leftMouseDown(mousePos)
-		if self.middleMouseDown: self.simulation.middleMouseDown(mousePos)
-		if self.rightMouseDown: self.simulation.rightMouseDown(mousePos)
+		if not self.gameDone:
+			if self.leftMouseDown: self.simulation.leftMouseDown(mousePos)
+			if self.middleMouseDown: self.simulation.middleMouseDown(mousePos)
+			if self.rightMouseDown: self.simulation.rightMouseDown(mousePos)
 
-		self.simulation.step(stepTime)
-		self.camera.update()
+			self.simulation.step(stepTime)
+			self.camera.update()
 
-		for i in range(len(self.players)):
-			self.players[i].updatePosition(self.simulation.strikers[i].position)
-			if self.camera.newData:
-				self.players[i].cameraInput(self.camera.puckPosition)
+			for i in range(len(self.players)):
+				self.players[i].updatePosition(self.simulation.strikers[i].position)
+				if self.camera.newData:
+					self.players[i].cameraInput(self.camera.puckPosition)
 
-			self.players[i].update(stepTime)
+				self.players[i].update(stepTime)
 
-			self.simulation.strikers[i].desiredPosition = self.players[i].getDesiredPosition()
+				self.simulation.strikers[i].desiredPosition = self.players[i].getDesiredPosition()
 
-		self.camera.newData = False		
-		self.checkGoal()
+			self.camera.newData = False
+
+			self.checkGoal()
+			self.checkEnd()
 
 		return self
 
@@ -68,3 +71,13 @@ class Game():
 			self.players[0].goals += 1
 			self.players[0].score += POINTS_PER_GOAL
 			self.simulation.spawnPuck()
+
+	def checkEnd(self):
+		if self.gameTime >= TIME_LIMIT:
+			self.gameDone = True
+			return
+
+		for player in self.players:
+			if player.goals > GOAL_LIMIT:
+				self.gameDone = True
+				return
