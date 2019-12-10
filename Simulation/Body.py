@@ -10,7 +10,7 @@ class Body():
 		self.force = Vector2(0, 0)
 		self.radius = r
 		self.mass = m
-		# self.contactListener = lambda x,y:None
+		self.postContact = self.postContactInit
 		if m == 0:
 			self.invMass = 0
 		else:
@@ -112,10 +112,7 @@ class Body():
 		return (d < ((self.radius + other.radius))**2)
 
 	def resolveCollision(self, restitution, other):
-		if self is not other:
-			# self.contactListener(self, other)
-			# other.contactListener(other, self)
-
+		if self is not other:			
 			d = self.position.distance_to(other.position)			
 			maxDistanceToOverlap = (self.radius + other.radius)
 
@@ -156,3 +153,9 @@ class Body():
 
 				self.position -= correction * self.invMass
 				other.position += correction * other.invMass
+
+			self.postContact(self, other)
+			other.postContact(other, self)
+
+	def postContactInit(self, x, y):
+		pass

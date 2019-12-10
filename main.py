@@ -18,7 +18,7 @@ def main():
 	MULTIPROCESS = False
 	NUMBER_OF_GAMES = POPULATION_SIZE
 	NUMBER_OF_GAMES = 1
-	INVARIANT_SIMULATION = True
+	INVARIANT_SIMULATION = False
 	# ----------------------------------------------------------------
 
 	# Init phase
@@ -169,6 +169,9 @@ def main():
 			graphics.createText("Right player:")
 			graphics.createText("‾‾‾‾‾‾‾‾‾‾‾‾")
 			graphics.createText("Score: " + str(round(game.players[1].score, 2)))
+
+			if game.gameDone:
+				graphics.createText("Game finished", line=15, column=2, size=100, alignment="center")
 			# graphics.createText("Dangerous puck: " + str(game.players[0].strategy.isPuckDangerous()))
 			
 
