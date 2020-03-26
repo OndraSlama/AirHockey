@@ -4,16 +4,20 @@ from math import floor
 # Field dimensions in game units
 FIELD_WIDTH = 1000
 FIELD_HEIGHT = 600
-GOAL_SPAN = 200
-STRIKER_AREA_WIDTH = 470
+GOAL_SPAN = 240
+
+# Limits
+YLIMIT = 230
+XLIMIT = 70
+STRIKER_AREA_WIDTH = 450
 
 # Objects sizes in game units
-PUCK_RADIUS = 20
-STRIKER_RADIUS = 30
+PUCK_RADIUS = 32
+STRIKER_RADIUS = 50
 
 # -------------- STRATEGY --------------
 DEFENSE_LINE = STRIKER_RADIUS + PUCK_RADIUS
-STOPPING_LINE = FIELD_WIDTH/6
+STOPPING_LINE = 200
 CLOSE_DISTANCE = PUCK_RADIUS # what is considered to be "close enough"
 
 # ------------- SIMULATION -------------
@@ -34,9 +38,6 @@ MAX_SPEED = 1000
 GOAL_LIMIT = 3
 TIME_LIMIT = 120 #seconds
 
-# ---------------- GA ----------------
-POPULATION_SIZE = 50
-
 # Fitness
 WINNING_POINTS_PER_SEC = 1
 POINTS_PER_GOAL = 1000
@@ -49,6 +50,7 @@ BLACK = (0, 0, 0)
 RED = (255, 50, 50)
 DIMMED_RED = (50,10,10)
 YELLOW = (255, 255, 0)
+DIMMED_YELLOW = (150, 150, 0)
 GREEN = (0, 255, 50)
 BLUE = (50, 50, 255)
 GREY = (100, 100, 100)

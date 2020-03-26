@@ -1,7 +1,7 @@
 from pygame.math import Vector2
 from Constants import *
 
-from Game.Strategy.StrategyStructs import *
+from Strategy.StrategyStructs import *
 
 class Player():
 	def __init__(self, game, strategy, side):
@@ -33,13 +33,16 @@ class Player():
 		# if self.game.simulation.puck.position.x TODO
 
 	def updatePosition(self, pos):
-		self.strategy.striker.position = Vector2(self.getRelativePos(pos))
+		self.strategy.setStriker(Vector2(self.getRelativePos(pos)))
 
 	def cameraInput(self, pos):
 		self.strategy.cameraInput(self.getRelativePos(pos))
 
 	def getDesiredPosition(self):
 		return self.getRelativePos(self.strategy.striker.desiredPosition)
+
+	def getDesiredVelocity(self):
+		return self.getRelativeVector(self.strategy.striker.desiredVelocity)
 
 	def markShot(self, puck):
 		puckPos = self.getRelativePos(puck.position)
@@ -56,25 +59,24 @@ class Player():
 			return 0
 
 		distFromCenter = abs(intersection.y)
-		bounces = floor(distFromCenter / (FIELD_HEIGHT/2))
+		bounces = 0
+
+		afterBounceDist = distFromCenter
+		while afterBounceDist > FIELD_HEIGHT/2:
+			bounces += 1
+			afterBounceDist -= FIELD_HEIGHT
+
+		afterBounceDist = abs(afterBounceDist)
+
 		if bounces > 3:
 			return 0
-
-		if bounces == 0:
-			certainity = 2
-		else:
-			certainity = 1
-
-		afterBounceDist = abs(distFromCenter % (FIELD_HEIGHT/2) - bounces * FIELD_HEIGHT/2)
 		
 		if afterBounceDist > GOAL_SPAN/2:
-			accuracy = min(1, ((GOAL_SPAN/2) / afterBounceDist) ** certainity)
+			accuracy = min(1, ((GOAL_SPAN/2) / afterBounceDist) ** 2)
 		else:
 			accuracy = 1
 
-		print(accuracy)
-
-		return round(puck.velocity.magnitude_squared()/100000)
+		return round(puck.velocity.magnitude_squared()/100000 * accuracy)
 
 	def checkHits(self, me, puck):
 		pass
@@ -123,7 +125,7 @@ class Player():
 		elif puckPos.x < STRIKER_AREA_WIDTH + PUCK_RADIUS + STRIKER_RADIUS:
 			self.puckInArea = True
 
-		if self.goals > self.opponent.goals:
+		if self.goals > self.opponent.goals + 1:
 			self.score += self.game.stepTime * WINNING_POINTS_PER_SEC
 	
 	def getRelativePos(self, pos):

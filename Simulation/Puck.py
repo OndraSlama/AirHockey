@@ -7,9 +7,9 @@ from numpy import sign
 class Puck(Body):
 	def __init__(self, sim, x, y, r, m=20):
 		super().__init__(sim, x, y, r, m)
-		self.position.y = 200
-		self.velocity.x = 1000
-		self.velocity.y = 800
+		self.position.y = 0
+		self.velocity.x = 0
+		self.velocity.y = 0
 		self.lastMovement = 0
 
 	def update(self):
@@ -23,9 +23,9 @@ class Puck(Body):
 			self.lastMovement = self.simulation.game.gameTime
 
 		if self.simulation.game.gameTime - self.lastMovement > 2:
-			direction = sign(self.position.x - FIELD_WIDTH/2)
+			direction = -sign(self.position.x - FIELD_WIDTH/2)
 			if direction == 0: direction = 1
-			self.applyForce(Vector2(direction*randrange(500000, 600000), randrange(-300000, 300000)))
+			self.applyForce(Vector2(direction*randrange(70000, 90000), randrange(-50000, 50000)))
 
 	def goToPosition(self, pos):
 		self.position = pos

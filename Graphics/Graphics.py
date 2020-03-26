@@ -4,7 +4,7 @@ from pygame.math import Vector2
 from math import floor
 from Constants import *
 from Functions import *
-from Game.Strategy.StrategyStructs import *
+from Strategy.StrategyStructs import *
 
 
 
@@ -50,24 +50,43 @@ class Graphics:
 			self.drawCircle(pos, PUCK_RADIUS/10, YELLOW)
 
 	def drawStrategy(self, strategy, color = GREEN):
-		for puck in strategy.puckHistory:
-			
-			if puck.state == 3:
-				historyColor = RED
-			else:
-				historyColor = GREEN
-			self.drawCircle(puck.position, PUCK_RADIUS/10, historyColor)
+		try:		
+			for puck in strategy.puckHistory:
+				
+				if puck.state == 3:
+					historyColor = RED
+				else:
+					historyColor = GREEN
+				self.drawCircle(puck.position, PUCK_RADIUS/10, historyColor)
 
-		if strategy.puck.state == 1:
-			for line in strategy.puck.trajectory:			
-				self.drawLine(line.start, line.end, DIMMED_RED)
+			if strategy.puck.state == 1:
+				for line in strategy.puck.trajectory:	
+						self.drawLine(line.start, line.end, RED)
+			# draw desired position
+			self.drawCircle(strategy.striker.desiredPosition, STRIKER_RADIUS/10, GREEN)
+			self.drawLine(strategy.striker.position, strategy.striker.desiredPosition, GREEN)
+			# draw predicted
+			self.drawCircle(strategy.predictedPosition, STRIKER_RADIUS/10, YELLOW)
+			self.drawLine(strategy.puck.position, strategy.predictedPosition, YELLOW)
 
-		# draw desired position
-		self.drawCircle(strategy.striker.desiredPosition, STRIKER_RADIUS/10, GREY)
-		# draw predicted
-		self.drawCircle(strategy.predictedPosition, STRIKER_RADIUS/10, YELLOW)
+		except Exception as e:
+			print("Could not draw strategy. Error: " + str(e))
 
-		# DEBUG
+		try:
+			# DEBUG
+			for line in strategy.debugLines:
+				self.drawLine(line.start, line.end, DIMMED_YELLOW)	
+
+			for point in strategy.debugPoints:
+				if point is None or abs(point.x) > 1000 or abs(point.y) > 1000 :
+					pass
+				else:
+					self.drawCircle(point, 5, DIMMED_YELLOW)
+		except:
+			pass
+
+	
+		
 		# if len(strategy.puck.trajectory) > 0:
 		# 	dist = strategy.getPointLineDist(strategy.striker.position, strategy.puck.trajectory[0])
 		# 	dist = strategy.striker.position.distance_to(strategy.striker.desiredPosition)
@@ -121,7 +140,6 @@ class Graphics:
 	def drawCircle(self, pos, rad, color):
 		pygame.gfxdraw.aacircle(self.window, u2pX(pos.x), u2pY(pos.y), u2pDist(rad), color)
 		pygame.gfxdraw.filled_circle(self.window, u2pX(pos.x), u2pY(pos.y), u2pDist(rad), color)
-
 	def drawLine(self, startPos, endPos, color):
 		pygame.draw.aaline(self.window, color, (u2pX(startPos[0]), u2pY(startPos[1])), (u2pX(endPos[0]), u2pY(endPos[1])))
 

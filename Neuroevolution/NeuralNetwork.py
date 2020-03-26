@@ -3,75 +3,82 @@ import pickle
 
 
 class NeuralNetwork():
-    def __init__(self, inNodes, hiddenNodes = [3], outNodes = 1):
-        if isinstance(inNodes, NeuralNetwork):
-            net = inNodes            
-            # parameters
-            self.size = net.size
+	def __init__(self, inNodes, hiddenNodes = [3], outNodes = 1):
+		if isinstance(inNodes, NeuralNetwork):
+			net = inNodes			
+			# parameters
+			self.size = net.size
 
-            # weights  
-            self.weights = [] 
-            for matrix in net.weights:
-                self.weights.append(matrix.copy()) # weight matrix       
+			# weights  
+			self.weights = [] 
+			for matrix in net.weights:
+				self.weights.append(matrix.copy()) # weight matrix	   
 
-            # biases
-            self.biases = [] 
-            for matrix in net.biases:
-                self.biases.append(matrix.copy()) # biases
+			# biases
+			self.biases = [] 
+			for matrix in net.biases:
+				self.biases.append(matrix.copy()) # biases
 
-        else:
-            # parameters
-            self.size = []
-            self.size.append(inNodes)
-            for hidden in hiddenNodes:
-                self.size.append(hidden)
-            self.size.append(outNodes)
+		else:
+			# parameters
+			self.size = []
+			self.size.append(inNodes)
+			for hidden in hiddenNodes:
+				self.size.append(hidden)
+			self.size.append(outNodes)
 
-            # weights
-            self.weights = []
-            for i in range(len(self.size)-1):
-                self.weights.append(np.random.randn(self.size[i],self.size[i+1]))
+			self.setRandomWeights()
+			
 
-            # biases
-            self.biases = []
-            for i in range(len(self.size)-1):
-                self.biases.append(np.random.randn(self.size[i+1]))
+	def setRandomWeights(self):
+		# weights
+		self.weights = []
+		for i in range(len(self.size)-1):
+			self.weights.append(np.random.randn(self.size[i],self.size[i+1]))
 
-    def Forward(self, X_in):
+		# biases
+		self.biases = []
+		for i in range(len(self.size)-1):
+			self.biases.append(np.random.randn(self.size[i+1]))
 
-        # save input
-        X = np.array(X_in)
+		return self
 
-        for i in range(len(self.weights)): 
-            X = np.dot(X, self.weights[i]) # dot product of X (input) and first set of weights
-            X += self.biases[i] # add bias
-            X = self.Sigmoid(X) # use activation function        
-        
-        # save ouput
-        Y = X.tolist()
-        return Y
+	def forward(self, X_in):
 
-    def Copy(self):
-        return NeuralNetwork(self)
+		# save input
+		X = np.array(X_in)
 
-    def Sigmoid(self, s):
-        # activation function
-        return 1/(1+np.exp(-s))
+		for i in range(len(self.weights)): 
+			X = np.dot(X, self.weights[i]) # dot product of X (input) and first set of weights
+			X += self.biases[i] # add bias
+			X = self.sigmoid(X) # use activation function		
+		
+		# save ouput
+		Y = X.tolist()
+		return Y
 
-    def Mutate(self, rate):
-        for i in range(len(self.weights)):
-            self.weights[i] = self.MutateMatrix(self.weights[i], rate)
+	def copy(self):
+		return NeuralNetwork(self)
 
-        for i in range(len(self.biases)):
-            self.biases[i] = self.MutateMatrix(self.biases[i], rate)
-        
-    def MutateMatrix(self, matrix, rate):
-        shape = matrix.shape                           # Store original shape
-        matrix = matrix.flatten()                      # Flatten to 1D
-        inds = np.random.choice(matrix.size, size=round(rate*matrix.size))       # Get random indices
-        matrix[inds] += np.random.normal(size=matrix[inds].size)/6            
-        matrix = matrix.reshape(shape)                                          # Restore original shape
-        return matrix
+
+	def sigmoid(self, s):
+		# activation function
+		return 1/(1+np.exp(-s))
+
+	def mutate(self, rate):
+		for i in range(len(self.weights)):
+			self.weights[i] = self.mutateMatrix(self.weights[i], rate)
+
+		for i in range(len(self.biases)):
+			self.biases[i] = self.mutateMatrix(self.biases[i], rate)
+		
+	def mutateMatrix(self, matrix, rate):
+		shape = matrix.shape						   # Store original shape
+		matrix = matrix.flatten()					  # Flatten to 1D
+		inds = np.random.choice(matrix.size, size=round(rate*matrix.size))	   # Get random indices
+		matrix[inds] += np.random.normal(size=matrix[inds].size)/6			
+		matrix = matrix.reshape(shape)										  # Restore original shape
+		return matrix
 
 if __name__ == "__main__":
 
@@ -88,10 +95,10 @@ if __name__ == "__main__":
 
 	NN = NeuralNetwork(2,[3,2],1)
 
-	NN.Mutate(0.5)
+	NN.mutate(0.5)
 
 	# defining our output
-	o = NN.Forward(X)
+	o = NN.forward(X)
 
 
 

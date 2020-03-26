@@ -39,9 +39,10 @@ class Simulation():
 
 	def leftMouseDown(self, mousePos):
 		mouse = Vector2((p2uX(mousePos[0]), p2uY(mousePos[1])))
-		self.strikers[1].desiredPosition = mouse
-		if self.strikers[1].desiredPosition.x < FIELD_WIDTH/2:
-			self.strikers[1].desiredPosition.x = FIELD_WIDTH/2
+		if mouse.x < FIELD_WIDTH/2:
+			mouse.x = FIELD_WIDTH/2
+			
+		self.strikers[1].calculateVelocity(mouse)
 
 	def middleMouseDown(self, mousePos):
 		mouse = Vector2((p2uX(mousePos[0]), p2uY(mousePos[1])))
@@ -49,4 +50,4 @@ class Simulation():
 	
 	def spawnPuck(self):
 		self.puck = Puck(self, FIELD_WIDTH/2, -FIELD_HEIGHT/2, PUCK_RADIUS, PUCK_MASS)
-		self.puck.velocity = Vector2(randrange(-300, 300), randrange(300, 400))
+		# self.puck.velocity = Vector2(randrange(-300, 300), randrange(300, 400))

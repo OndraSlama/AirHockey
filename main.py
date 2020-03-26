@@ -4,30 +4,49 @@ from Constants import *
 from Simulation import Simulation
 from Game.Game import Game
 from multiprocessing import Pool
+from Neuroevolution.Population import Population
+import pickle
+import warnings
 
-def main():
+warnings.simplefilter('error')
 
-	# Basic settings. For more, see: Constants.py --------------------
+# Basic settings. For more, see: Constants.py --------------------
 
-	# NE = Neuroevoluting Neural network
-	# AI = 2 hardcoded strategies againts each other
-	# vsNN = Learned Neural network vs player
-	# vsAI = Hardcoded strategy vs player
-	MODE = "AI"
+# NE = Neuroevoluting Neural network
+# AI = 2 hardcoded strategies againts each other
+# vsNN = Learned Neural network vs player
+# vsAI = Hardcoded strategy vs player
+MODE = "vsAI"
 
-	MULTIPROCESS = False
-	NUMBER_OF_GAMES = POPULATION_SIZE
-	NUMBER_OF_GAMES = 1
-	INVARIANT_SIMULATION = False
-	# ----------------------------------------------------------------
+MULTIPROCESS = 0
+NUMBER_OF_GAMES = 35
+INVARIANT_SIMULATION = 0
+LOAD_POPULATION_FROM_FILE = 0
+
+populationsFolder = "Populations/"	
+populationToLoad = "games_5-gen_5-score_5970.obj"
+
+
+def main():	 # Main ----------------------------------------------------------------
+	global NUMBER_OF_GAMES
 
 	# Init phase
 	if MODE == "vsNN" or MODE == "vsAI": NUMBER_OF_GAMES = 1 
+	if MODE == "NE": 
+		POPULATION_SIZE = NUMBER_OF_GAMES * 2 
+		population = Population(surRatio=1)
 
 	pygame.init()	
 	clock = pygame.time.Clock()
 	graphics = Graphics(WIDTH, HEIGHT)
 	games = [Game(MODE) for i in range(NUMBER_OF_GAMES)]
+
+	if LOAD_POPULATION_FROM_FILE and MODE == "NE":
+		with open(populationsFolder + populationToLoad, 'rb') as file_nn:
+			population = pickle.load(file_nn)
+
+		games = createGames(population)
+		NUMBER_OF_GAMES = len(games)
 	
 	if MULTIPROCESS: pool = Pool()
 
@@ -38,7 +57,11 @@ def main():
 	leftMouseDown = False
 	middleMouseDown = False
 	rightMouseDown = False
-	gameSpeed = 1
+	if MULTIPROCESS:
+		gameSpeed = 200
+	else:
+		gameSpeed = 1
+
 	currentGame = 0
 	mousePos = None
 	while running:
@@ -110,10 +133,11 @@ def main():
 	# --------------------- GAME --------------------------
 		mousePos = pygame.mouse.get_pos()
 
+		games[currentGame].leftMouseDown = leftMouseDown
+		games[currentGame].middleMouseDown = middleMouseDown
+		games[currentGame].rightMouseDown = rightMouseDown
+
 		for game in games:
-			game.leftMouseDown = leftMouseDown
-			game.middleMouseDown = middleMouseDown
-			game.rightMouseDown = rightMouseDown
 			game.stepTime = stepTime
 			game.gameSpeed = gameSpeed
 			game.mousePosition = mousePos
@@ -124,6 +148,19 @@ def main():
 			for game in games:
 				for i in range(max(1, game.gameSpeed)):
 					game.update()
+
+		if MODE == "NE":
+			if allGamesFinished(games):
+				winnerBrains = [g.players[g.bestScorePlayer] for g in games]
+				population.createGeneration(winnerBrains, POPULATION_SIZE)
+				population.geneticCycle()
+
+				if population.generation % 100 == 0 and population.generation != 0:
+					with open(populationsFolder + 'games_'+ str(round(population.popSize/2)) +'-gen_'+ str(population.generation) + '-score_' + str(round(population.globalBestMember.gameEntity.score)) + '.obj', 'wb') as file_nn:
+						pickle.dump(population, file_nn)
+
+				games = createGames(population)
+
 		
 
 	# ------------------- GRAPHICS ------------------------
@@ -135,11 +172,11 @@ def main():
 		graphics.drawPuck(game.simulation.puck.position)
 		graphics.drawCamera(game.camera.puckPosition)
 		graphics.drawHistory(game.camera.positionHistory)
-		graphics.drawStrategy(game.players[0].strategy)
 
 		for striker in game.simulation.strikers:
 			graphics.drawStriker(striker.position, GREY)
 			
+		graphics.drawStrategy(game.players[0].strategy)
 
 		# Render text
 		if realTime - lastTextUpdate > 250:
@@ -156,8 +193,9 @@ def main():
 			graphics.createText("Game steps per frame: " + str(round(gameSpeed, roundDigit)))
 			graphics.createText("Game speed: " + str(round((gameSpeed*stepTime) * currentFps, roundDigit)))
 			graphics.createText("Game time: " + str(round(game.gameTime)))
-			graphics.createText("Real puck speed: " + str(round(game.simulation.puck.velocity.magnitude(), 2)))
-			graphics.createText("Captured puck speed: " + str(round(game.players[0].strategy.puck.speedMagnitude, 2)))
+			graphics.createText("Puck speed: " + str(round(game.simulation.puck.velocity.magnitude(), 2)))
+			# graphics.createText("Puck speed: " + str(round(game.players[0].strategy.puck.speedMagnitude, 2)))
+			graphics.createText("Camera FPS: " + str(game.camera.frameRate))
 			graphics.createText("Showing game: " + str(currentGame + 1) + "/"+ str(NUMBER_OF_GAMES))
 
 			graphics.createText(" ")
@@ -169,6 +207,33 @@ def main():
 			graphics.createText("Right player:")
 			graphics.createText("‾‾‾‾‾‾‾‾‾‾‾‾")
 			graphics.createText("Score: " + str(round(game.players[1].score, 2)))
+
+			graphics.createText(" ")
+			graphics.createText("Strategy:")
+			graphics.createText("‾‾‾‾‾‾‾")
+			graphics.createText(game.players[0].strategy.debugString)
+			graphics.createText("Goal line intersetion: {}".format(game.players[0].strategy.goalLineIntersection))
+			graphics.createText("Puck speed: " + str(round(game.players[0].strategy.puck.speedMagnitude, 2)))
+			graphics.createText("Puck vector: {:1.2f}, {:1.2f}".format(game.players[0].strategy.puck.vector.x, game.players[0].strategy.puck.vector.y))
+			graphics.createText("Puck angle: {:3.1f}".format(game.players[0].strategy.puck.angle))
+			graphics.createText("Dangerous puck: {}".format(game.players[0].strategy.isPuckDangerous()))
+			graphics.createText("Puck Behind: {}".format(game.players[0].strategy.isPuckBehingStriker()))
+			graphics.createText(" ")
+			graphics.createText("Striker in good position: {}".format(game.players[0].strategy.isInGoodPosition(game.players[0].strategy.lineToGoal)))
+			graphics.createText("Striker position: {:3.0f}, {:3.0f}".format(*game.players[0].strategy.striker.position))
+			graphics.createText("Striker velocity: {:3.0f}, {:3.0f}".format(*game.players[0].strategy.striker.velocity))
+			graphics.createText("Striker speed: {:5.0f}".format(game.players[0].strategy.striker.velocity.magnitude()))
+			# graphics.createText("Striker speed: {:3.0f}, {:3.0f}".format(*game.players[0].strategy.opponentStriker.position))
+
+
+			if MODE == "NE":
+				graphics.createText(" ")
+				graphics.createText("Neuroevolution:")
+				graphics.createText("‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
+				graphics.createText("Generation: " + str(population.generation))
+				if population.globalBestMember is not None:
+					graphics.createText("Best fitness: " + str(population.globalBestMember.absoluteFitness))
+				graphics.createText("Brain size: " + str(game.players[0].strategy.brain.size))
 
 			if game.gameDone:
 				graphics.createText("Game finished", line=15, column=2, size=100, alignment="center")
@@ -188,6 +253,21 @@ def main():
 		pool.join()
 
 	pygame.quit()
+
+def allGamesFinished(games):
+	for game in games:
+		if not game.gameDone: return False
+
+	return True
+
+def createGames(population):
+	games = []
+	for i in range(NUMBER_OF_GAMES):
+		games.append(Game(MODE))
+		for player in games[i].players:
+			player.strategy.brain = population.getDistinctGenom()
+
+	return games
 
 def work(game):
 	for i in range(max(1, game.gameSpeed)):

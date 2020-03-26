@@ -1,89 +1,110 @@
 import numpy as np
 from Constants import *
+from random import randint
+
 class Population():
-    def __init__(self, mutRate = 0.15, surRatio = 0.25):
-        self.players = []
-        self.genomes = []
-        self.generation = 0
-        self.mutationRate = mutRate
-        self.surviveRatio = surRatio
-        self.globalBestPlayer = None
-        self.bestPlayers = []
-        
-    def CreateGeneration(self, gameEntities):
-        self.popSize = len(gameEntities)
-        self.generation += 1
-        self.genomes = []
-        self.players = []
-        for i in range(self.popSize):
-            if gameEntities[i].aiControlled:
-                self.players.append(Player(gameEntities[i]))  
+	def __init__(self, mutRate = 0.35, surRatio = 0.75):
+		self.members = []
+		self.genomes = []
+		self.generation = 0
+		self.mutationRate = mutRate
+		self.surviveRatio = surRatio
+		self.globalBestMember = None
+		self.bestMembers = []
+		self.availableGenoms = []
+		
+	def createGeneration(self, gameEntities, popSize = None):
+		if popSize is None: popSize = len(gameEntities)
+		
+		self.popSize = popSize
+		self.generation += 1
+		self.genomes = []
+		self.members = []
+		for i in range(len(gameEntities)):			
+			self.members.append(Member(gameEntities[i]))  
 
-    def GeneticCycle(self):
-        self.ComputeFitness()
-        self.Selection()
-        self.Populate()
-        self.Mutate()
-        return self.genomes
+		self.availableGenoms = [i for i in range(popSize)]
 
-    def ComputeFitness(self):
-        for player in self.players:
-            player.fitness = (player.gameEntity.length - snakeInitialLength) * player.gameEntity.traveled/10
-            player.absoluteFitness = player.fitness
+	def geneticCycle(self):
+		self.computeFitness()
+		self.saveBest()
+		self.selection()
+		self.populate()
+		self.mutate()
+		return self.genomes
 
-    def Selection(self):
-        # Sort acording to fitness
-        self.players.sort(key=lambda x: x.fitness, reverse=True)
+	def computeFitness(self):
+		for member in self.members:
+			member.relativeFitness = member.gameEntity.score
+			member.absoluteFitness = member.relativeFitness
 
-        # Save best players
-        self.bestPlayers.append(self.players[0])
-        if self.globalBestPlayer != None:
-            if self.globalBestPlayer.absoluteFitness < self.players[0].absoluteFitness: self.globalBestPlayer = self.players[0]
-        else:
-            self.globalBestPlayer = self.players[0]
+	def saveBest(self):
+		# Sort acording to fitness
+		self.members.sort(key=lambda x: x.relativeFitness, reverse=True)
 
-        # Save best genomes
-        for i in range(round(self.popSize*self.surviveRatio)):
-            self.genomes.append(self.players[i].gameEntity.brain)        
+		# Save best members
+		self.bestMembers.append(self.members[0])
+		if self.globalBestMember != None:
+			if self.globalBestMember.absoluteFitness < self.members[0].absoluteFitness: self.globalBestMember = self.members[0]
+		else:
+			self.globalBestMember = self.members[0]
 
-    def Populate(self):
-        # normalize fitness
-        bestFitness = self.players[0].fitness
-        for player in self.players:
-            player.fitness = player.fitness / max(bestFitness, 1) # divide by the best player
-        
-        # create probability array for wich genomes are to be cloned
-        fitnessSum = sum(p.fitness for p in self.players[:len(self.genomes)-1]) #sum normalized fitness of the selected players
-        probArray = [] 
-        for i in range(len(self.genomes)):
-            probArray.append(self.players[i].fitness/max(fitnessSum, 1))      
+	def selection(self):		
+		# Sort acording to fitness
+		self.members.sort(key=lambda x: x.relativeFitness, reverse=True)
 
-        # create new population
-        # self.genomes = []
-        for i in range(self.popSize - len(self.genomes)):            
-            self.genomes.append(self.SelectGenom(probArray).Copy())
+		# Save best genomes
+		for i in range(round(len(self.members)*self.surviveRatio)):
+			self.genomes.append(self.members[i].gameEntity.strategy.brain)		
 
-    def SelectGenom(self, probArray):
-        cumProbability = 0
-        p = np.random.rand()
-        for i in range(len(probArray)): 
-            cumProbability += probArray[i]
-            if(p <= cumProbability):
-                return self.genomes[i]
+	def populate(self):
+		# normalize fitness
+		bestFitness = self.members[0].relativeFitness
+		for member in self.members:
+			member.relativeFitness = member.absoluteFitness / max(bestFitness, 1) # divide by the best member
+		
+		# create probability array for wich genomes are to be cloned
+		fitnessSum = sum(p.relativeFitness for p in self.members[:len(self.genomes)-1]) #sum normalized fitness of the selected members
+		probArray = [] 
+		for i in range(len(self.genomes)):
+			probArray.append(self.members[i].relativeFitness/max(fitnessSum, 1))	  
 
-    def Mutate(self):
-        for genom in self.genomes:
-            genom.Mutate(self.mutationRate)
+		# create new population
+		newGenomes = []
+		for i in range(self.popSize):			
+			newGenomes.append(self.selectGenom(probArray))
+		
+		self.genomes = newGenomes
 
-    
+	def selectGenom(self, probArray):
+		if np.random.rand() < 0.7:
+			cumProbability = 0
+			p = np.random.rand()
+			for i in range(len(probArray)): 
+				cumProbability += probArray[i]
+				if(p <= cumProbability):				
+					return self.genomes[i].copy()	
+			return self.genomes[randint(0, len(self.genomes)-1)].copy()
+
+		elif np.random.rand() < 0.7:
+			return self.genomes[randint(0, len(self.genomes)-1)].copy()
+		else:
+			return self.genomes[randint(0, len(self.genomes)-1)].copy().setRandomWeights()
+
+	def mutate(self):
+		for genom in self.genomes:
+			genom.mutate(self.mutationRate)
+
+	def getDistinctGenom(self):
+		randIndex = randint(0, len(self.availableGenoms)-1)
+		return self.genomes[self.availableGenoms.pop(randIndex)].copy()
 
 
-
-class Player():
-    def __init__(self, gameEntity):
-        self.gameEntity = gameEntity
-        self.fitness = 0
-        self.absoluteFitness = 0
+class Member():
+	def __init__(self, gameEntity):
+		self.gameEntity = gameEntity
+		self.relativeFitness = 0
+		self.absoluteFitness = 0
 
 
 

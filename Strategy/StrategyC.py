@@ -1,5 +1,5 @@
-from Game.Strategy.BaseStrategy import BaseStrategy
-from Game.Strategy.StrategyStructs import *
+from Strategy.BaseStrategy import BaseStrategy
+from Strategy.StrategyStructs import *
 from pygame.math import Vector2
 from numpy import sign
 from Constants import *
@@ -14,13 +14,13 @@ DEFEND = 20
 class StrategyC(BaseStrategy):
 	def __init__(self):
 		super().__init__()
+		self.description = "Combination of A and B. Slightly advanced mechanics with puck prediction."
 		self.actionState = 0
 		self.lineToGoal = Line()
 		self.state = DEFEND
 		self.subState = DEFEND
 
-	def process(self, stepTime):
-		self.stepTick(stepTime)	 
+	def _process(self): 
 
 		def case(state):
 			return state == self.state
@@ -42,7 +42,7 @@ class StrategyC(BaseStrategy):
 
 		elif case(ATTACK):
 
-			if self.puck.velocity.x > MAX_SPEED*0.7 or self.getPredictedPuckPosition(self.puck.position).x > STRIKER_AREA_WIDTH:
+			if self.puck.velocity.x > self.maxSpeed*0.7 or self.getPredictedPuckPosition(self.puck.position).x > STRIKER_AREA_WIDTH:
 				self.subState = WAITING
 				self.state = DEFEND
 
@@ -57,7 +57,7 @@ class StrategyC(BaseStrategy):
 				self.lineToGoal = Line(self.predictedPosition, Vector2(FIELD_WIDTH*1, 0))
 				vectorFromGoal = self.lineToGoal.start - self.lineToGoal.end
 				vectorFromGoal.scale_to_length(STRIKER_RADIUS*4)
-				self.setDesired(self.predictedPosition + vectorFromGoal)
+				self.setDesiredPosition(self.predictedPosition + vectorFromGoal)
 
 				if self.striker.position.distance_squared_to(self.striker.desiredPosition) < CLOSE_DISTANCE**2 or self.isPuckDangerous() or self.isInGoodPosition(self.lineToGoal):
 					self.subState = ATTACK_SHOOT
@@ -96,26 +96,18 @@ class StrategyC(BaseStrategy):
 		else:
 			pass
 
+		# 'Always' fucntions
+		pos = self.getPredictedPuckPosition(self.striker.desiredPosition, 1)
+		if self.isPuckBehingStriker(pos) and self.puck.speedMagnitude > 100 and self.state == DEFEND:			
+			self.defendGoalLastLine()
+			self.subState = WAITING
+			self.state = DEFEND
+
+		self.moveIfStuck()
+
+
 
 	# Other functions
-
-	def defendGoalDefault(self):
-		if self.bounces and self.puck.state == ACURATE:
-			fromPoint = self.puck.trajectory[-1].start
-		else:
-			fromPoint = self.puck.position
-
-		a = Line(fromPoint, Vector2(0,0))
-		b = Line(Vector2(DEFENSE_LINE, 0), Vector2(DEFENSE_LINE, FIELD_HEIGHT))
-		desiredPosition = self.getIntersectPoint(a, b)
-		if desiredPosition is not None:
-			self.setDesired(Vector2(desiredPosition))
-
-	def defendGoalLastLine(self):
-		if not self.goalLineIntersection == -10000 and self.puck.state == ACURATE:
-			self.setDesired(Vector2(STRIKER_RADIUS, self.goalLineIntersection))
-		else:
-			self.setDesired(Vector2(STRIKER_RADIUS, sign(self.puck.position.y) * min(GOAL_SPAN/2, abs(self.puck.position.y))))
 
 	def defendTrajectory(self):		
 
@@ -130,23 +122,20 @@ class StrategyC(BaseStrategy):
 				if isLate:
 					self.defendGoalDefault()
 				else:
-					self.setDesired(self.puck.trajectory[0].end)
+					self.setDesiredPosition(self.puck.trajectory[0].end)
 			else:
-				self.setDesired(desiredPos)
-
-	def isPuckBehingStriker(self):
-		return self.striker.position.x > self.puck.position.x - PUCK_RADIUS
+				self.setDesiredPosition(desiredPos)
 
 	def shouldIntercept(self):
 		if len(self.puck.trajectory) == 0:
 			return 0
-		return self.puck.state == ACURATE and (not self.bounces or self.puck.trajectory[-1].start.x < STRIKER_AREA_WIDTH - STRIKER_RADIUS*3 ) and self.puck.vector.x < 0
+		return self.puck.state == ACURATE and (not self.willBounce or self.puck.trajectory[-1].start.x < STRIKER_AREA_WIDTH - STRIKER_RADIUS*3 ) and self.puck.vector.x < 0
 
 	def isPuckDangerous(self):
 		if self.puck.position.x > FIELD_WIDTH/2:
 			return True
 
-		if self.bounces and self.puck.state == ACURATE and self.puck.vector.x < 0:
+		if self.willBounce and self.puck.state == ACURATE and self.puck.vector.x < 0:
 			if len(self.puck.trajectory) > 0:
 				if self.getPointLineDist(self.striker.position, self.puck.trajectory[0]) > PUCK_RADIUS:
 					perpendicularPoint = self.getPerpendicularPoint(self.striker.position, self.puck.trajectory[0])				
@@ -174,7 +163,7 @@ class StrategyC(BaseStrategy):
 
 	def moveToByPortion(self, toPos, portion=0.5):
 		stepVector = toPos - self.striker.desiredPosition
-		self.setDesired(self.striker.desiredPosition + stepVector * portion)
+		self.setDesiredPosition(self.striker.desiredPosition + stepVector * portion)
 
 		
 		

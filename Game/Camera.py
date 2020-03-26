@@ -1,4 +1,4 @@
-from Game.HelperClasses import Filter
+from HelperClasses import Filter
 from pygame.math import Vector2
 from Constants import *
 from random import gauss
@@ -7,7 +7,7 @@ from numpy import sign
 class Camera():
 	def __init__(self, game, fps):
 		self.game = game
-		self.filter = Filter(20, 2.2, 1.4)
+		self.filter = Filter(15, 2.2, 1.2)
 		self.delay = 0.02 # in seconds - will not be precise
 		self.frameRate = fps
 		self.stepsSinceLastCapture = 0

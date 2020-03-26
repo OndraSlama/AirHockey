@@ -10,6 +10,7 @@ class StrategyStriker():
 		self.position = Vector2(0, 0)
 		self.velocity = Vector2(0, 0)
 		self.desiredPosition = Vector2(0, 0)
+		self.desiredVelocity = Vector2(0, 0)
 
 
 class StrategyPuck():
@@ -18,6 +19,7 @@ class StrategyPuck():
 		self.velocity = Vector2(0, 0)
 		self.vector = Vector2(0, 0)
 		self.speedMagnitude = 0
+		self.angle = 0
 		self.timeSinceCaptured = 0
 		self.trajectory = []
 		self.state = state

@@ -2,22 +2,28 @@ from Constants import *
 from Simulation.Simulation import Simulation
 from Game.Player import Player
 from Game.Camera import Camera
-from Game.Strategy import StrategyA, StrategyB, StrategyC, StrategyD 
-from Game.Strategy.BaseStrategy import BaseStrategy
+from Strategy import StrategyA, StrategyB, StrategyC, StrategyD, NN_StrategyA
+from Strategy.BaseStrategy import BaseStrategy
 from pygame.math import Vector2
 
 class Game():
 	def __init__(self, mode):
 		self.simulation = Simulation(self, mode)
-		self.camera = Camera(self, 66)
-		
+		self.camera = Camera(self, 70)
+		self.mode = mode
 		# Players
 		self.players = []
-		self.players.append(Player(self, StrategyD.StrategyD(), "left"))
+		if mode == "NE" or mode == "vsNN":
+			self.players.append(Player(self, NN_StrategyA.NN_StrategyA(), "left"))			
+		else:
+			self.players.append(Player(self, StrategyD.StrategyD(), "left"))
+
 		if mode == "vsAI" or mode == "vsNN":
 			self.players.append(Player(self, BaseStrategy(), "right"))
+		elif mode == "NE":
+			self.players.append(Player(self, NN_StrategyA.NN_StrategyA(), "right"))
 		else:
-			self.players.append(Player(self, StrategyB.StrategyB(), "right"))
+			self.players.append(Player(self, StrategyD.StrategyD(), "right"))
 
 		self.players[0].opponent = self.players[1]
 		self.players[1].opponent = self.players[0]
@@ -26,6 +32,12 @@ class Game():
 		self.gameDone = False
 		self.gameTime = 0
 		self.gameSpeed = 1
+		self.scoreChangeAt = 0
+		self.prevScore = [0, 0]		
+
+		self.bestScorePlayer = -1
+		self.winner = -1
+
 		self.stepTime = MIN_STEP_TIME
 		self.mousePosition = None
 		self.leftMouseDown = False
@@ -52,7 +64,7 @@ class Game():
 
 				self.players[i].update(stepTime)
 
-				self.simulation.strikers[i].desiredPosition = self.players[i].getDesiredPosition()
+				self.simulation.strikers[i].desiredVelocity = self.players[i].getDesiredVelocity()
 
 			self.camera.newData = False
 
@@ -73,11 +85,31 @@ class Game():
 			self.simulation.spawnPuck()
 
 	def checkEnd(self):
-		if self.gameTime >= TIME_LIMIT:
+		goals = [self.players[0].goals, self.players[1].goals]
+		score = [self.players[0].score, self.players[1].score]
+		
+		if not(score == self.prevScore) and self.mode == "NE":
+			self.scoreChangeAt = self.gameTime
+			self.prevScore = score
+		
+		if self.mode == "NE" and self.gameTime - self.scoreChangeAt > 20:
 			self.gameDone = True
-			return
+
+		if self.mode == "NE" and self.gameTime >= TIME_LIMIT:
+			self.gameDone = True			
 
 		for player in self.players:
-			if player.goals > GOAL_LIMIT:
+			if player.goals >= GOAL_LIMIT:
 				self.gameDone = True
-				return
+
+		if self.gameDone:
+			goals = [self.players[0].goals, self.players[1].goals]
+			score = [self.players[0].score, self.players[1].score]
+			
+			if goals[0] == goals[1]:
+				self.winner = 2
+			else:
+				self.winner = goals.index(max(goals))
+
+			self.bestScorePlayer = score.index(max(score))
+				
