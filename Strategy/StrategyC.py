@@ -1,5 +1,6 @@
 from Strategy.BaseStrategy import BaseStrategy
 from Strategy.StrategyStructs import *
+from HelperClasses import Line
 from pygame.math import Vector2
 from numpy import sign
 from Constants import *
@@ -65,7 +66,7 @@ class StrategyC(BaseStrategy):
 			elif subCase(ATTACK_SHOOT):
 
 				# Accurate shot
-				if len(self.puck.trajectory) > 0 and self.getPointLineDist(self.striker.position, self.puck.trajectory[0]) < STRIKER_RADIUS:
+				if len(self.puck.trajectory) > 0 and self.puck.trajectory[0].getPointLineDist(self.striker.position) < STRIKER_RADIUS:
 					step = (self.puck.position - self.striker.position)
 					step.scale_to_length(PUCK_RADIUS*3)
 					self.clampDesired(self.puck.position, step)
@@ -73,7 +74,7 @@ class StrategyC(BaseStrategy):
 				
 				# Inaccurate shot
 				else:
-					perpendicularPoint = self.getPerpendicularPoint(self.striker.position, self.puck.trajectory[0])
+					perpendicularPoint = self.puck.trajectory[0].getPerpendicularPoint(self.striker.position)
 					self.getPredictedPuckPosition(perpendicularPoint)
 					if perpendicularPoint.x < self.predictedPosition.x:
 						step = (self.predictedPosition - self.striker.position)
@@ -112,7 +113,7 @@ class StrategyC(BaseStrategy):
 	def defendTrajectory(self):		
 
 		if len(self.puck.trajectory) > 0:
-			desiredPos = self.getPerpendicularPoint(self.striker.position, self.puck.trajectory[0])
+			desiredPos = self.puck.trajectory[0].getPerpendicularPoint(self.striker.position)
 			isLate = False
 			if self.getPredictedPuckPosition(desiredPos, 1.5).x < desiredPos.x:
 				desiredPos = self.predictedPosition
@@ -137,8 +138,8 @@ class StrategyC(BaseStrategy):
 
 		if self.willBounce and self.puck.state == ACURATE and self.puck.vector.x < 0:
 			if len(self.puck.trajectory) > 0:
-				if self.getPointLineDist(self.striker.position, self.puck.trajectory[0]) > PUCK_RADIUS:
-					perpendicularPoint = self.getPerpendicularPoint(self.striker.position, self.puck.trajectory[0])				
+				if self.puck.trajectory[0].getPointLineDist(self.striker.position) > PUCK_RADIUS:
+					perpendicularPoint = self.puck.trajectory[0].getPerpendicularPoint(self.striker.position)				
 					if perpendicularPoint.x > self.getPredictedPuckPosition(perpendicularPoint).x:
 						return True
 
@@ -147,12 +148,12 @@ class StrategyC(BaseStrategy):
 
 		if abs(self.goalLineIntersection) < (GOAL_SPAN/2) * 1.2 and self.puck.state == ACURATE:
 			if len(self.puck.trajectory) > 0:
-				if self.getPointLineDist(self.striker.position, self.puck.trajectory[-1]) > PUCK_RADIUS:
+				if self.puck.trajectory[-1].getPointLineDist(self.striker.position) > PUCK_RADIUS:
 					return True
 		return False
 
 	def isInGoodPosition(self, lineToGoal):
-		return self.getPointLineDist(self.striker.position, lineToGoal) < CLOSE_DISTANCE and self.striker.position.distance_squared_to(self.puck.position) > (STRIKER_RADIUS*3)**2
+		return lineToGoal.getPointLineDist(self.striker.position) < CLOSE_DISTANCE and self.striker.position.distance_squared_to(self.puck.position) > (STRIKER_RADIUS*3)**2
 
 	def badAttackingAngle(self, pos):
 		radius, attackAngle = (pos - self.striker.position).as_polar()

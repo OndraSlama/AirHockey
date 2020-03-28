@@ -40,6 +40,13 @@ class Graphics:
 		self.drawLine((STRIKER_AREA_WIDTH, FIELD_HEIGHT/2), (STRIKER_AREA_WIDTH, -FIELD_HEIGHT/2), GREY)
 		self.drawLine((FIELD_WIDTH - STRIKER_AREA_WIDTH, FIELD_HEIGHT/2), (FIELD_WIDTH - STRIKER_AREA_WIDTH, -FIELD_HEIGHT/2), GREY)
 
+		# Field chamber
+		pygame.draw.polygon(self.window, GREY, ((u2pX(0), u2pY(FIELD_HEIGHT/2)), (u2pX(0), u2pY(FIELD_HEIGHT/2 - CHAMBER_SIZE)), (u2pX(CHAMBER_SIZE), u2pY(FIELD_HEIGHT/2))))
+		pygame.draw.polygon(self.window, GREY, ((u2pX(0), u2pY(-FIELD_HEIGHT/2)), (u2pX(0), u2pY(-FIELD_HEIGHT/2 + CHAMBER_SIZE)), (u2pX(CHAMBER_SIZE), u2pY(-FIELD_HEIGHT/2))))
+		pygame.draw.polygon(self.window, GREY, ((u2pX(FIELD_WIDTH), u2pY(FIELD_HEIGHT/2)), (u2pX(FIELD_WIDTH), u2pY(FIELD_HEIGHT/2 - CHAMBER_SIZE)), (u2pX(FIELD_WIDTH - CHAMBER_SIZE), u2pY(FIELD_HEIGHT/2))))
+		pygame.draw.polygon(self.window, GREY, ((u2pX(FIELD_WIDTH), u2pY(-FIELD_HEIGHT/2)), (u2pX(FIELD_WIDTH), u2pY(-FIELD_HEIGHT/2 + CHAMBER_SIZE)), (u2pX(FIELD_WIDTH - CHAMBER_SIZE), u2pY(-FIELD_HEIGHT/2))))
+		
+
 	def drawCamera(self, pos):
 		self.drawLine((0, pos.y), (FIELD_WIDTH, pos.y), DIMMED_RED)
 		self.drawLine((pos.x, FIELD_HEIGHT/2), (pos.x, -FIELD_HEIGHT/2), DIMMED_RED)

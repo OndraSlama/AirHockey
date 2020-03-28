@@ -1,7 +1,8 @@
 from pygame.math import Vector2
 from Constants import *
 
-from Strategy.StrategyStructs import *
+from HelperClasses import Line
+
 
 class Player():
 	def __init__(self, game, strategy, side):
@@ -53,7 +54,7 @@ class Player():
 
 		shotLine = Line(puckPos, puckPos + puckVel)
 		goalLine = Line(Vector2(FIELD_WIDTH, 0), Vector2(FIELD_WIDTH, 1))
-		intersection = self.strategy.getIntersectPoint(shotLine, goalLine)
+		intersection = shotLine.getIntersectPoint(goalLine)
 
 		if intersection is None:
 			return 0

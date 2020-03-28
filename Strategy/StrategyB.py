@@ -1,5 +1,6 @@
 from Strategy.BaseStrategy import BaseStrategy
 from Strategy.StrategyStructs import *
+from HelperClasses import Line
 from pygame.math import Vector2
 from numpy import sign
 from Constants import *
@@ -7,6 +8,7 @@ from Constants import *
 class StrategyB(BaseStrategy):
 	def __init__(self):
 		super().__init__()
+		self.description = "Basic game mechanics. Uses puck position prediction."
 		self.actionState = 0
 		self.lineToGoal = Line()
 		

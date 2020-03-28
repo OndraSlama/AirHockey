@@ -5,6 +5,7 @@ from math import floor
 FIELD_WIDTH = 1000
 FIELD_HEIGHT = 600
 GOAL_SPAN = 240
+CHAMBER_SIZE = 30 # on both size - eg: 30 = 30mm x 30mm
 
 # Limits
 YLIMIT = 230
@@ -29,10 +30,11 @@ STRIKER_RESTITUTION = 0.6
 FRICTION_MAG = 100
 VELOCITY_DAMP = 0.995
 
-# -------------- LIMITS --------------
+# -------------- MOTORS --------------
 # Striker limitations
-MAX_ACCELERATION = 10000
-MAX_SPEED = 1000
+MAX_ACCELERATION = 15000
+MAX_SPEED = 3000
+KP_GAIN = 5
 
 # -------------- RULES --------------
 GOAL_LIMIT = 3

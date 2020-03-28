@@ -1,8 +1,9 @@
 from Strategy.StrategyStructs import *
-from HelperClasses import Filter
+from HelperClasses import Filter, Line
 from Constants import *
 from numpy import sign
 from pygame.math import Vector2
+from Functions import *
 
 class BaseStrategy():
 	def __init__(self):
@@ -19,6 +20,7 @@ class BaseStrategy():
 		# Striker Limits
 		self.maxSpeed = MAX_SPEED
 		self.acceleration = MAX_ACCELERATION
+		self.gain = KP_GAIN
 
 		# Puck
 		self.puck = StrategyPuck()
@@ -151,9 +153,11 @@ class BaseStrategy():
 				if abs(pos.y) > max(200, FIELD_HEIGHT/2 - (stepDistance * abs(self.puck.vector.y) + PUCK_RADIUS)) and sign(currentStepVector.x) == sign(self.puck.velocity.x) and sign(self.puck.velocity.y) == sign(pos.y) and self.puck.state == ACURATE: # seems like bounce from sidewalls occured
 					trajectoryLine = Line(self.puckHistory[self.firstUsefull].position, self.puck.position)
 					bounceLine = Line(Vector2(0, sign(pos.y) * (FIELD_HEIGHT/2 - PUCK_RADIUS)), Vector2(FIELD_WIDTH,  sign(pos.y) * (FIELD_HEIGHT/2 - PUCK_RADIUS)))
+
+					bouncePoint = trajectoryLine.getIntersectPoint(bounceLine)
 					self.debugLines.append(trajectoryLine)
 					self.debugLines.append(bounceLine)
-					bouncePoint = self.getIntersectPoint(trajectoryLine, bounceLine)
+					bouncePoint = trajectoryLine.getIntersectPoint(bounceLine)
 					self.puck.position = bouncePoint
 					# print(bouncePoint)
 				for i in range(len(self.puckHistory)):
@@ -269,13 +273,13 @@ class BaseStrategy():
 		line = Line(fromPos, desiredPos)
 		self.debugLines.append(line)
 		if desiredPos.x > STRIKER_AREA_WIDTH:
-			desiredPos = self.getBothCoordinates(line, x = STRIKER_AREA_WIDTH)
+			desiredPos = line.getBothCoordinates(x = STRIKER_AREA_WIDTH)
 
 		if abs(desiredPos.y) > YLIMIT:
-			desiredPos = self.getBothCoordinates(line, y = sign(desiredPos.y) * YLIMIT)
+			desiredPos = line.getBothCoordinates(y = sign(desiredPos.y) * YLIMIT)
 
 		if desiredPos.x < XLIMIT: 
-			desiredPos = self.getBothCoordinates(line, x = XLIMIT)
+			desiredPos = line.getBothCoordinates(x = XLIMIT)
 
 		self.setDesiredPosition(desiredPos)
 
@@ -291,8 +295,7 @@ class BaseStrategy():
 			self.striker.desiredPosition.x = XLIMIT
 
 	def calculateDesiredVelocity(self):
-		gain = (self.acceleration/700)
-		self.striker.desiredVelocity = gain*(self.striker.desiredPosition - self.striker.position)
+		self.striker.desiredVelocity = self.gain*(self.striker.desiredPosition - self.striker.position)
 
 	# Checkers ------------------------------------------------------------------------------
 
@@ -320,117 +323,10 @@ class BaseStrategy():
 			
 	# Get functions --------------------------------------------------------------
 
-	def getIntersectPoint(self, line1, line2):
-		self.debugLines.append(line1)
-		self.debugLines.append(line2)
-
-		p1 = (line1.start.x, line1.start.y)
-		p2 = (line1.end.x, line1.end.y)
-		p3 = (line2.start.x, line2.start.y)
-		p4 = (line2.end.x, line2.end.y)
-		m1 = self.calculateGradient(p1, p2)
-		m2 = self.calculateGradient(p3, p4)
-		
-		# See if the the lines are parallel
-		if (m1 != m2):
-			# Not parallel
-			
-			# See if either line is vertical
-			if (m1 is not None and m2 is not None):
-				# Neither line vertical
-				b1 = self.calculateYAxisIntersect(p1, m1)
-				b2 = self.calculateYAxisIntersect(p3, m2)
-				x = (b2 - b1) / (m1 - m2)
-				y = (m1 * x) + b1
-			else:
-				# Line 1 is vertical so use line 2's values
-				if (m1 is None):
-					b2 = self.calculateYAxisIntersect(p3, m2)
-					x = p1[0]
-					y = (m2 * x) + b2
-				# Line 2 is vertical so use line 1's values
-				elif (m2 is None):
-					b1 = self.calculateYAxisIntersect(p1, m1)
-					x = p3[0]
-					y = (m1 * x) + b1
-				else:
-					assert False
-					
-			return Vector2(x,y)
-		else:
-			# Parallel lines with same 'b' value must be the same line so they intersect
-			# everywhere in this case we return the start and end points of both lines
-			# the calculateIntersectPoint method will sort out which of these points
-			# lays on both line segments
-			b1, b2 = None, None # vertical lines have no b value
-			if m1 is not None:
-				b1 = self.calculateYAxisIntersect(p1, m1)
-			
-			if m2 is not None:
-				b2 = self.calculateYAxisIntersect(p3, m2)
-			
-			# If these parallel lines lay on one another   
-			if b1 == b2:
-				return None # p1,p2,p3,p4
-			else:
-				return None
-
 	def getAngleDifference(self, vector1, vetor2):
 		errorAngle = vector1.angle_to(vetor2)
 		if abs(errorAngle) > 180: errorAngle -= sign(errorAngle) * 360
 		return errorAngle
-
-	def getPointLineDist(self, point, line):
-		m = self.calculateGradient(line.start, line.end)
-		k = self.calculateYAxisIntersect(line.start, m)
-
-		if m is not None:
-			return abs(k + m*point.x - point.y) / (1 + m**2)**0.5
-		else:
-			return abs(line.start.x - point.x)
-
-	def getBothCoordinates(self, line, y=None, x = None):
-		a = self.calculateGradient(line.start, line.end)
-		b = self.calculateYAxisIntersect(line.start, a)
-
-		if a is not None:
-			if y is not None:
-				if not a==0:
-					x = (y - b)/a				
-			elif x is not None:
-				y = a*x + b
-		elif y is not None:
-			x = line.start.x
-		return Vector2(x, y)
-
-	def getPerpendicularPoint(self, pos, line):
-		vector = line.end - line.start
-		perpendiculatVector = Vector2(-vector.y, vector.x)
-		# secondPoint = pos + perpendiculatVector
-
-		return self.getIntersectPoint(line, Line(pos - perpendiculatVector, pos + perpendiculatVector))
-
-	def getValueInXYdir(self, dir_x, dir_y, value):
-		if dir_x == 0 and dir_y == 0:
-			return Vector2([value/2,value/2])
-	
-		def map(val, in_min, in_max, out_min, out_max): # maps from interval to other interval
-			return (val - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
-		# dir_x = vektor rychlosti x
-		# dir_y = vektor rychlosti y
-		dir_0 = -dir_x - dir_y
-		dir_1 = dir_x - dir_y
-		absdir_0 = abs(dir_0)
-		absdir_1 = abs(dir_1)
-		bigger = absdir_0 if absdir_0 > absdir_1 else absdir_1
-
-		absdir_0 = map(absdir_0 , 0 , bigger, 0, value)
-		absdir_1 = map(absdir_1 , 0 , bigger, 0, value)
-
-		dir_0 = absdir_0 if dir_0>=0 else -absdir_0
-		dir_1 = absdir_1 if dir_1>=0 else -absdir_1
-
-		return Vector2([round(-dir_0 + dir_1), round(-dir_0 - dir_1)])
 
 	def getPredictedPuckPosition(self, strikerPos = None, reserve=1.3):
 		if strikerPos is None: strikerPos = self.striker.desiredPosition
@@ -441,8 +337,8 @@ class BaseStrategy():
 				step = strikerPos - self.striker.position
 				dist = step.magnitude()
 				# Compute time, that will take striker to move to desired position
-				a = self.getValueInXYdir(step.x, step.y, self.acceleration).magnitude()
-				vm = self.getValueInXYdir(step.x, step.y, self.maxSpeed).magnitude()
+				a = getValueInXYdir(step.x, step.y, self.acceleration).magnitude()
+				vm = getValueInXYdir(step.x, step.y, self.maxSpeed).magnitude()
 				v0 = sign(self.striker.velocity.dot(step)) * (step * self.striker.velocity.dot(step) / step.dot(step)).magnitude() #self.striker.speedMagnitude * step.normalize()
 				
 				t1 = (vm - v0)/a	
@@ -462,6 +358,7 @@ class BaseStrategy():
 				return position
 			except:
 				return Vector2(0,0)
+
 
 	# Line math ---------------
 	def calculateTrajectory(self):
@@ -521,22 +418,6 @@ class BaseStrategy():
 		else:
 			self.willBounce = False
 
-	def calculateGradient(self, p1, p2):  
-		# Ensure that the line is not vertical
-		if (p1[0] != p2[0]):
-			m = (p1[1] - p2[1]) / (p1[0] - p2[0])
-			return m
-		else:
-			return None
-
-	def calculateYAxisIntersect(self, p, m):
-		if m is not None:
-   			return  p[1] - (m * p[0])
-		else:
-			return None
-
-
-
 	# Basic strategy functions used in Process method ---------------------------------------------
 
 	def defendGoalDefault(self):
@@ -551,7 +432,7 @@ class BaseStrategy():
 		a = Line(fromPoint, Vector2(0,0))
 		b = Line(Vector2(DEFENSE_LINE, -FIELD_HEIGHT/2), Vector2(DEFENSE_LINE, FIELD_HEIGHT/2))
 
-		desiredPosition = self.getIntersectPoint(a, b)
+		desiredPosition = a.getIntersectPoint(b)
 
 		self.debugLines.append(a)
 		self.debugLines.append(b)
@@ -588,7 +469,7 @@ class BaseStrategy():
 			self.debugString = "basic.defendTrajectory"
 			self.debugLines.append(self.puck.trajectory[0])
 			self.debugLines.append(Line(self.striker.position, secondPoint))
-			self.setDesiredPosition(self.getIntersectPoint(self.puck.trajectory[0], Line(self.striker.position, secondPoint)))
+			self.setDesiredPosition(self.puck.trajectory[0].getIntersectPoint(Line(self.striker.position, secondPoint)))
 	
 	def moveIfStuck(self):
 		if self.puck.speedMagnitude > 100 or self.puck.position.x > STRIKER_AREA_WIDTH + PUCK_RADIUS*.8:
@@ -618,6 +499,6 @@ class BaseStrategy():
 
 		if abs(self.goalLineIntersection) < (GOAL_SPAN/2) * 1.2 and self.puck.state == ACURATE:
 			if len(self.puck.trajectory) > 0:
-				if self.getPointLineDist(self.striker.position, self.puck.trajectory[-1]) > PUCK_RADIUS:
+				if self.puck.trajectory[-1].getPointLineDist(self.striker.position) > PUCK_RADIUS:
 					return True
 		return False

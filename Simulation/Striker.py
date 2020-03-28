@@ -10,14 +10,16 @@ class Striker(Body):
 		self.mode = mode
 
 	def update(self):
+
+
 		self.calculateMovement()
 		# self.friction(FRICTION_MAG*50, self.simulation.stepTime)
 		self.move(1, self.simulation.stepTime)
-		self.bounce(BORDER_RESTITUTION, FIELD_HEIGHT/2, -FIELD_HEIGHT/2, 0, FIELD_WIDTH, GOAL_SPAN)
+		# fieldCorners = []
+		# self.bounce(BORDER_RESTITUTION, FIELD_HEIGHT/2, -FIELD_HEIGHT/2, 0, FIELD_WIDTH, GOAL_SPAN)
 
 	def calculateVelocity(self, desiredPos):
-		gain = (MAX_ACCELERATION/700)
-		self.desiredVelocity = gain*(desiredPos - self.position)
+		self.desiredVelocity = KP_GAIN*(desiredPos - self.position)
 
 	def calculateMovement(self):	
 
@@ -25,8 +27,8 @@ class Striker(Body):
 			maxSpeed = self.getValueInXYdir(self.desiredVelocity.x, self.desiredVelocity.y, MAX_SPEED).magnitude()
 			maxAcc = self.getValueInXYdir(self.desiredVelocity.x, self.desiredVelocity.y, MAX_ACCELERATION).magnitude()
 		else:
-			maxSpeed = self.getValueInXYdir(self.desiredVelocity.x, self.desiredVelocity.y, MAX_SPEED*10).magnitude()
-			maxAcc = self.getValueInXYdir(self.desiredVelocity.x, self.desiredVelocity.y, MAX_ACCELERATION*100).magnitude()
+			maxSpeed = self.getValueInXYdir(self.desiredVelocity.x, self.desiredVelocity.y, MAX_SPEED).magnitude()
+			maxAcc = self.getValueInXYdir(self.desiredVelocity.x, self.desiredVelocity.y, MAX_ACCELERATION).magnitude()
 		
 		vel =  Vector2(self.desiredVelocity)
 
@@ -53,8 +55,8 @@ class Striker(Body):
 		absdir_1 = abs(dir_1)
 		bigger = absdir_0 if absdir_0 > absdir_1 else absdir_1
 
-		absdir_0 = map(absdir_0 , 0 , bigger, 0, value)
-		absdir_1 = map(absdir_1 , 0 , bigger, 0, value)
+		absdir_0 = map(absdir_0 , 0 , bigger, 0, value/2)
+		absdir_1 = map(absdir_1 , 0 , bigger, 0, value/2)
 
 		dir_0 = absdir_0 if dir_0>=0 else -absdir_0
 		dir_1 = absdir_1 if dir_1>=0 else -absdir_1

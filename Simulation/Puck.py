@@ -3,6 +3,7 @@ from Constants import *
 from pygame.math import Vector2
 from random import randrange
 from numpy import sign
+from HelperClasses import Line
 
 class Puck(Body):
 	def __init__(self, sim, x, y, r, m=20):
@@ -13,10 +14,20 @@ class Puck(Body):
 		self.lastMovement = 0
 
 	def update(self):
-		self.friction(FRICTION_MAG, self.simulation.stepTime)
+
+		# line = Line(Vector2(1000, GOAL_SPAN/2), Vector2(1000, 300))
+		# if self.intersectsLine(line):
+		# 	self.bounceFromLine(line)
+		# print(self.intersectsLine(line))
+
+		# print(line.getPointSegmentDist(self.position))
+		
+		# print(Line(Vector2(500, 300), Vector2(500, -300)).getPointSide(self.position))
+
+
 		self.moveIfStuck()
 		self.move(VELOCITY_DAMP**(self.simulation.stepTime/MIN_STEP_TIME), self.simulation.stepTime)
-		self.bounce(BORDER_RESTITUTION, FIELD_HEIGHT/2, -FIELD_HEIGHT/2, 0, FIELD_WIDTH, GOAL_SPAN)	
+		# self.bounce(BORDER_RESTITUTION, FIELD_HEIGHT/2, -FIELD_HEIGHT/2, 0, FIELD_WIDTH, GOAL_SPAN)	
 
 	def moveIfStuck(self):
 		if abs(self.velocity.x) > 5 or abs(self.velocity.y) > 5:

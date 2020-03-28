@@ -20,7 +20,7 @@ MODE = "vsAI"
 
 MULTIPROCESS = 0
 NUMBER_OF_GAMES = 35
-INVARIANT_SIMULATION = 0
+INVARIANT_SIMULATION = 1
 LOAD_POPULATION_FROM_FILE = 0
 
 populationsFolder = "Populations/"	
@@ -190,9 +190,9 @@ def main():	 # Main ------------------------------------------------------------
 			graphics.createText("FPS: " + str(round(currentFps, 2)))
 			graphics.createText("Step time: " + str(round(game.simulation.stepTime, 4)))		
 			roundDigit = max(min(round(.5/gameSpeed), 3), 1)
-			graphics.createText("Game steps per frame: " + str(round(gameSpeed, roundDigit)))
-			graphics.createText("Game speed: " + str(round((gameSpeed*stepTime) * currentFps, roundDigit)))
-			graphics.createText("Game time: " + str(round(game.gameTime)))
+			graphics.createText("Game steps per frame: " + str(round(max(gameSpeed, 1), roundDigit)))
+			graphics.createText("Game speed: " + str(round((max(gameSpeed, 1)*stepTime) * currentFps, roundDigit)))
+			graphics.createText("Game time: " + str(round(game.gameTime, 2)))
 			graphics.createText("Puck speed: " + str(round(game.simulation.puck.velocity.magnitude(), 2)))
 			# graphics.createText("Puck speed: " + str(round(game.players[0].strategy.puck.speedMagnitude, 2)))
 			graphics.createText("Camera FPS: " + str(game.camera.frameRate))
@@ -219,9 +219,10 @@ def main():	 # Main ------------------------------------------------------------
 			graphics.createText("Dangerous puck: {}".format(game.players[0].strategy.isPuckDangerous()))
 			graphics.createText("Puck Behind: {}".format(game.players[0].strategy.isPuckBehingStriker()))
 			graphics.createText(" ")
-			graphics.createText("Striker in good position: {}".format(game.players[0].strategy.isInGoodPosition(game.players[0].strategy.lineToGoal)))
+			# graphics.createText("Striker in good position: {}".format(game.players[0].strategy.isInGoodPosition(game.players[0].strategy.lineToGoal)))
 			graphics.createText("Striker position: {:3.0f}, {:3.0f}".format(*game.players[0].strategy.striker.position))
-			graphics.createText("Striker velocity: {:3.0f}, {:3.0f}".format(*game.players[0].strategy.striker.velocity))
+			# graphics.createText("Striker velocity: {:3.0f}, {:3.0f}".format(*game.players[0].strategy.striker.velocity))
+			graphics.createText("Striker velocity: {:3.0f}, {:3.0f}".format(*game.players[1].strategy.striker.velocity))
 			graphics.createText("Striker speed: {:5.0f}".format(game.players[0].strategy.striker.velocity.magnitude()))
 			# graphics.createText("Striker speed: {:3.0f}, {:3.0f}".format(*game.players[0].strategy.opponentStriker.position))
 
