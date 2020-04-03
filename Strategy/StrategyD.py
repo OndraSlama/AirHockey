@@ -195,7 +195,7 @@ class StrategyD(BaseStrategy):
 		
 		# 'Always' fucntions
 		pos = self.getPredictedPuckPosition(self.striker.desiredPosition, 1)
-		if self.isPuckBehingStriker(pos) and self.puck.speedMagnitude > 100 and self.state == DEFEND:			
+		if self.isPuckBehingStriker(pos) and self.puck.speedMagnitude > 100 and abs(self.puck.vector.y) < .6 and self.state == DEFEND:			
 			self.defendGoalLastLine()
 			self.subState = WAITING
 			self.state = DEFEND

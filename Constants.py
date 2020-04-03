@@ -32,13 +32,17 @@ VELOCITY_DAMP = 0.995
 
 # -------------- MOTORS --------------
 # Striker limitations
-MAX_ACCELERATION = 15000
+MAX_ACCELERATION = 30000
 MAX_SPEED = 3000
-KP_GAIN = 5
+KP_GAIN = 10
 
 # -------------- RULES --------------
 GOAL_LIMIT = 3
 TIME_LIMIT = 120 #seconds
+
+# Data
+MIN_SHOT_SPEED = 700
+# MAX_X_VECTOR = 
 
 # Fitness
 WINNING_POINTS_PER_SEC = 1

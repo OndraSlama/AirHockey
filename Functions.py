@@ -43,4 +43,4 @@ def getValueInXYdir(dir_x, dir_y, value):
 	dir_0 = absdir_0 if dir_0>=0 else -absdir_0
 	dir_1 = absdir_1 if dir_1>=0 else -absdir_1
 
-	return Vector2([round(-dir_0 + dir_1), round(-dir_0 - dir_1)])
+	return Vector2([round(-dir_0 + dir_1, 1), round(-dir_0 - dir_1, 1)])

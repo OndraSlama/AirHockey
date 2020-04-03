@@ -16,7 +16,7 @@ class Game():
 		if mode == "NE" or mode == "vsNN":
 			self.players.append(Player(self, NN_StrategyA.NN_StrategyA(), "left"))			
 		else:
-			self.players.append(Player(self, StrategyD.StrategyD(), "left"))
+			self.players.append(Player(self, BaseStrategy(), "left"))
 
 		if mode == "vsAI" or mode == "vsNN":
 			self.players.append(Player(self, BaseStrategy(), "right"))
@@ -44,6 +44,13 @@ class Game():
 		self.middleMouseDown = False
 		self.rightMouseDown = False
 
+		# Statistic data
+		self.onSide = 0
+		self.maxShotSpeed = [0, 0]
+		self.puckControl = [0, 0]
+		self.shotOnGoals = [0, 0]
+		self.lostPucks = [0, 0]
+
 	def update(self):
 		stepTime = self.stepTime
 		mousePos = self.mousePosition
@@ -68,10 +75,47 @@ class Game():
 
 			self.camera.newData = False
 
+			self.checkData(stepTime)
 			self.checkGoal()
 			self.checkEnd()
 
 		return self
+
+	def checkData(self, stepTime):	
+		puck = self.players[0].strategy.puck
+		puckPos = puck.position
+		if puckPos.x > FIELD_WIDTH - (STRIKER_AREA_WIDTH) and not self.onSide == 1:
+			self.onSide = 1
+			self.checkShot(-1)
+			self.lostPucks[0] += 1
+			print(self.lostPucks)
+			
+		elif puckPos.x < STRIKER_AREA_WIDTH and not self.onSide == -1:
+			self.onSide = -1
+			self.checkShot(1)
+			self.lostPucks[1] += 1
+		elif abs(puckPos.x - FIELD_WIDTH/2) < (FIELD_WIDTH - 2*(STRIKER_AREA_WIDTH))/2:
+			self.onSide = 0
+
+		if not self.onSide == 0:
+			self.puckControl[max(0, self.onSide)] += stepTime
+
+
+		
+		
+
+	def checkShot(self, dir):
+		print("Puck Control:", self.puckControl)
+
+		puck = self.players[0].strategy.puck
+		if puck.speedMagnitude > 700 and abs(puck.vector.y) < .9:
+			# print("good shot, dir:", dir)
+			if len(puck.trajectory) > 0 and abs(puck.trajectory[-1].end.y) < GOAL_SPAN/2 * .9:
+				self.shotOnGoals[max(0, dir)] += 1
+				print("Shots on goal: ", self.shotOnGoals)
+			if self.maxShotSpeed[max(0, dir)] < puck.speedMagnitude < 10000 :
+				self.maxShotSpeed[max(0, dir)] = puck.speedMagnitude
+				# print("Max shot speed:", self.maxShotSpeed)
 
 	def checkGoal(self):
 		if self.simulation.puck.position.x < 0:

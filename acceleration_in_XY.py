@@ -27,9 +27,9 @@ def accel_in_XY_dir(dir_x, dir_y, max_accel):
 
 
 # Examples:
-max_accel = 1000; # [m/s] set by setaccel,133000
+max_accel = 10; # [m/s] set by setaccel,133000
 print("Set acceleration: " + str(max_accel))
-print("H-bot construction holds property: |a_x| + |a_y| = 2*max_accel\n")
+print("H-bot construction holds property: |a_x| + |a_y| = max_accel\n")
 
 print("Examples:")
 [a_x , a_y] = accel_in_XY_dir(10,0, max_accel)
