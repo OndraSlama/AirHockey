@@ -1,7 +1,7 @@
 # import the necessary packages
 from picamera.array import PiRGBArray
 from picamera import PiCamera
-from HelperClasses import Repeater, FPSCounter
+from UniTools import Repeater, FPSCounter
 import time
 import cv2
 # initialize the camera and grab a reference to the raw camera capture

@@ -4,6 +4,7 @@ from pygame.math import Vector2
 from math import floor
 from Constants import *
 from Functions import *
+from UniTools import toList
 from Strategy.StrategyStructs import *
 
 
@@ -24,17 +25,19 @@ class Graphics:
 
 	def drawBackgrond(self):
 		# Draw background
-		self.window.fill(BLACK)
+		self.window.fill(WHITE)
 
 	def drawField(self):
 		rect = [u2pX(0), u2pY(FIELD_HEIGHT/2), FIELD_PIXEL_WIDTH, FIELD_PIXEL_HEIGHT]
+		pygame.draw.rect(self.window, [el * 1.8 for el in GREY], rect)
 		pygame.draw.rect(self.window, GREY, rect, 4)
 
-		leftGoalCoords = [u2pX(0), u2pY(GOAL_SPAN/2), u2pX(0), u2pY(-GOAL_SPAN/2)]
-		pygame.draw.line(self.window, BLACK, (leftGoalCoords[0], leftGoalCoords[1]), (leftGoalCoords[2], leftGoalCoords[3]), 5)
+		# leftGoalCoords = [u2pX(0), u2pY(GOAL_SPAN/2), u2pX(0), u2pY(-GOAL_SPAN/2)]
+		# pygame.draw.line(self.window, WHITE, (leftGoalCoords[0], leftGoalCoords[1]), (leftGoalCoords[2], leftGoalCoords[3]), 5)
+		self.drawLine((0, GOAL_SPAN/2), (0, -GOAL_SPAN/2), WHITE,  5)
 
-		rightGoalCoords = [u2pX(FIELD_WIDTH), u2pY(GOAL_SPAN/2), u2pX(FIELD_WIDTH), u2pY(-GOAL_SPAN/2)]
-		pygame.draw.line(self.window, BLACK, (rightGoalCoords[0], rightGoalCoords[1]), (rightGoalCoords[2], rightGoalCoords[3]), 5)
+		# rightGoalCoords = [u2pX(FIELD_WIDTH), u2pY(GOAL_SPAN/2), u2pX(FIELD_WIDTH), u2pY(-GOAL_SPAN/2)]
+		self.drawLine((FIELD_WIDTH, GOAL_SPAN/2), (FIELD_WIDTH, -GOAL_SPAN/2), WHITE,  5)
 
 		pygame.gfxdraw.aacircle(self.window, u2pX(FIELD_WIDTH/2), u2pY(0), u2pDist(50), GREY)
 		self.drawLine((STRIKER_AREA_WIDTH, FIELD_HEIGHT/2), (STRIKER_AREA_WIDTH, -FIELD_HEIGHT/2), GREY)
@@ -144,18 +147,23 @@ class Graphics:
 		self.drawCircle(pos, STRIKER_RADIUS * 0.45,  [el * 0.4 for el in color])
 		self.drawCircle(pos, STRIKER_RADIUS * 0.4,  color)
 		
-	def drawCircle(self, pos, rad, color):
-		pygame.gfxdraw.aacircle(self.window, u2pX(pos.x), u2pY(pos.y), u2pDist(rad), color)
-		pygame.gfxdraw.filled_circle(self.window, u2pX(pos.x), u2pY(pos.y), u2pDist(rad), color)
-	def drawLine(self, startPos, endPos, color):
-		pygame.draw.aaline(self.window, color, (u2pX(startPos[0]), u2pY(startPos[1])), (u2pX(endPos[0]), u2pY(endPos[1])))
+	def drawCircle(self, _pos, rad, color):
+		pos = toList(_pos)
+		pygame.gfxdraw.aacircle(self.window, u2pX(pos[0]), u2pY(pos[1]), u2pDist(rad), color)
+		pygame.gfxdraw.filled_circle(self.window, u2pX(pos[0]), u2pY(pos[1]), u2pDist(rad), color)
+
+	def drawLine(self, startPos, endPos, color, thickness = 1):
+		if thickness == 1:
+			pygame.draw.aaline(self.window, color, (u2pX(startPos[0]), u2pY(startPos[1])), (u2pX(endPos[0]), u2pY(endPos[1])))
+		else:
+			pygame.draw.line(self.window, color, (u2pX(startPos[0]), u2pY(startPos[1])), (u2pX(endPos[0]), u2pY(endPos[1])), 5)
 
 	# --------------------------------- TEXT STUFF --------------------------------------
 	def startCreatingTexts(self):
 		self.blits = []
 		self.index = 0
 
-	def createText(self, string, size = TEXT_SIZE, color = WHITE, line = None, column = 0, x = None, y = None, alignment = "topleft"):
+	def createText(self, string, size = TEXT_SIZE, color = BLACK, line = None, column = 0, x = None, y = None, alignment = "topleft"):
 		if line is None: line = self.index	
 		if alignment == "topleft":
 			if x is None:  x = self.textColumnPos[column]

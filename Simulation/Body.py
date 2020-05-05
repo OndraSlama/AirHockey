@@ -1,6 +1,6 @@
 from pygame.math import Vector2
 from Constants import *
-from HelperClasses import Line
+from UniTools import Line
 
 class Body():
 	def __init__(self, sim, x, y, r, m=20): # m = 0 -> m=infinity

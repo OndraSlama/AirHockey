@@ -1,6 +1,6 @@
 from Constants import *
 from Strategy import StrategyD
-from HelperClasses import FPSCounter, Repeater
+from UniTools import FPSCounter, Repeater
 from pygame.math import Vector2
 from threading import Thread
 import time

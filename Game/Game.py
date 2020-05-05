@@ -1,4 +1,5 @@
 from Constants import *
+from Functions import *
 from Simulation.Simulation import Simulation
 from Game.Player import Player
 from Game.Camera import Camera
@@ -7,26 +8,30 @@ from Strategy.BaseStrategy import BaseStrategy
 from pygame.math import Vector2
 
 class Game():
-	def __init__(self, mode):
-		self.simulation = Simulation(self, mode)
+	def __init__(self, mode, playground):
+		self.simulation = Simulation(self, mode, playground)
 		self.camera = Camera(self, 70)
 		self.mode = mode
+		self.playground = playground
 		# Players
+		#----------------------------- 1st player -----------------------------
 		self.players = []
 		if mode == "NE" or mode == "vsNN":
 			self.players.append(Player(self, NN_StrategyA.NN_StrategyA(), "left"))			
 		else:
-			self.players.append(Player(self, BaseStrategy(), "left"))
+			self.players.append(Player(self, StrategyD.StrategyD(), "left"))
 
-		if mode == "vsAI" or mode == "vsNN":
-			self.players.append(Player(self, BaseStrategy(), "right"))
-		elif mode == "NE":
-			self.players.append(Player(self, NN_StrategyA.NN_StrategyA(), "right"))
-		else:
-			self.players.append(Player(self, StrategyD.StrategyD(), "right"))
+		#----------------------------- 2nd player -----------------------------
+		if not playground:
+			if mode == "vsAI" or mode == "vsNN":
+				self.players.append(Player(self, BaseStrategy(), "right"))
+			elif mode == "NE":
+				self.players.append(Player(self, NN_StrategyA.NN_StrategyA(), "right"))
+			else:
+				self.players.append(Player(self, StrategyD.StrategyD(), "right"))
 
-		self.players[0].opponent = self.players[1]
-		self.players[1].opponent = self.players[0]
+			self.players[0].opponent = self.players[1]
+			self.players[1].opponent = self.players[0]
 		
 		# States
 		self.gameDone = False
@@ -57,7 +62,6 @@ class Game():
 		self.gameTime += stepTime
 
 		if not self.gameDone:
-			if self.leftMouseDown: self.simulation.leftMouseDown(mousePos)
 			if self.middleMouseDown: self.simulation.middleMouseDown(mousePos)
 			if self.rightMouseDown: self.simulation.rightMouseDown(mousePos)
 
@@ -71,13 +75,20 @@ class Game():
 
 				self.players[i].update(stepTime)
 
+				if self.leftMouseDown: 
+					player = not self.playground
+					mouseVec = self.players[player].getRelativePos(Vector2((p2uX(mousePos[0]), p2uY(mousePos[1]))))
+					self.players[player].strategy.setDesiredPosition(mouseVec)
+
 				self.simulation.strikers[i].desiredVelocity = self.players[i].getDesiredVelocity()
 
 			self.camera.newData = False
 
+
+
 			self.checkData(stepTime)
 			self.checkGoal()
-			self.checkEnd()
+			# self.checkEnd()
 
 		return self
 
@@ -118,15 +129,15 @@ class Game():
 				# print("Max shot speed:", self.maxShotSpeed)
 
 	def checkGoal(self):
-		if self.simulation.puck.position.x < 0:
-			self.players[1].goals += 1
-			self.players[1].score += POINTS_PER_GOAL
-			self.simulation.spawnPuck()
-
-		if self.simulation.puck.position.x > FIELD_WIDTH:
-			self.players[0].goals += 1
-			self.players[0].score += POINTS_PER_GOAL
-			self.simulation.spawnPuck()
+		if not self.playground:
+			if self.simulation.puck.position.x < 0:
+				self.players[1].goals += 1
+				self.players[1].score += POINTS_PER_GOAL
+				self.simulation.spawnPuck()
+			if self.simulation.puck.position.x > FIELD_WIDTH:
+				self.players[0].goals += 1
+				self.players[0].score += POINTS_PER_GOAL
+				self.simulation.spawnPuck()
 
 	def checkEnd(self):
 		goals = [self.players[0].goals, self.players[1].goals]

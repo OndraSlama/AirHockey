@@ -3,7 +3,7 @@ from Constants import *
 from pygame.math import Vector2
 from random import randrange
 from numpy import sign
-from HelperClasses import Line
+from UniTools import Line
 
 class Puck(Body):
 	def __init__(self, sim, x, y, r, m=20):

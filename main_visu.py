@@ -1,189 +1,129 @@
 import pygame
+import pygame.math as gameMath
+import math
+import numpy as np
 from Graphics.Graphics import Graphics
 from Constants import *
-from Simulation import Simulation
-from Game.Game import Game
-from multiprocessing import Pool
-from Neuroevolution.Population import Population
-from UniTools import Plotter, toList
-from numpy import sign
+from Functions import *
 import pickle
+import json
 import warnings
+from datetime import datetime
 
 warnings.simplefilter('error')
 
-# Basic settings. For more, see: Constants.py --------------------
-
-# NE = Neuroevoluting Neural network
-# AI = 2 hardcoded strategies againts each other
-# vsNN = Learned Neural network vs player
-# vsAI = Hardcoded strategy vs player
-MODE = "vsAI"
-
-PLAYGROUND = 1
-MULTIPROCESS = 0
-NUMBER_OF_GAMES = 35
-INVARIANT_SIMULATION = 1
-LOAD_POPULATION_FROM_FILE = 0
-
-populationsFolder = "Populations/"	
-populationToLoad = "games_5-gen_5-score_5970.obj"
 
 
 def main():	 # Main ----------------------------------------------------------------
-	global NUMBER_OF_GAMES
 
-	# Init phase
-	if MODE == "vsNN" or MODE == "vsAI": NUMBER_OF_GAMES = 1 
-	if MODE == "NE": 
-		POPULATION_SIZE = NUMBER_OF_GAMES * 2 
-		population = Population(surRatio=1)
-
+	#----------------------------- Init -----------------------------
 	pygame.init()	
 	clock = pygame.time.Clock()
 	graphics = Graphics(WIDTH, HEIGHT)
-	games = [Game(MODE, PLAYGROUND) for i in range(NUMBER_OF_GAMES)]
-	plotter = Plotter(linesNum=2, lastSeconds=20)
 
-	if LOAD_POPULATION_FROM_FILE and MODE == "NE":
-		with open(populationsFolder + populationToLoad, 'rb') as file_nn:
-			population = pickle.load(file_nn)
+	#----------------------------- Load data -----------------------------
+	with open('Recordings/Recording_2020-05-03_15-56-21.txt') as f:
+		data = json.load(f)
 
-		games = createGames(population)
-		NUMBER_OF_GAMES = len(games)
-	
-	if MULTIPROCESS: pool = Pool()
+		#----------------------------- Temp fix for datetime fuckup -----------------------------
+		firstTime = datetime.strptime(data[0][0], "%Y-%m-%d_%H-%M-%S")
+		lastTime = datetime.strptime(data[-1][0], "%Y-%m-%d_%H-%M-%S")
+		duration = (lastTime - firstTime).seconds
+		stepTime = duration/len(data)
+		
+		addedTime = 0
+		for row in data:
+			row.insert(0,addedTime)
+			row.pop(1)
+			addedTime += stepTime
 
-	# Loop variables
-	running = True
-	paused = False
+		#----------------------------- Temp data alocation -----------------------------
+		time = [row[0] for row in data]
+		puckPos = [row[1] for row in data]
+		puckVel = [row[2] for row in data]
+		strikerPos = [row[3] for row in data]
+		strikerVel = [row[4] for row in data]
+		desiredPos = [row[5] for row in data]
+		predictedPos = [row[6] for row in data]
+		
+
+	#----------------------------- Loop -----------------------------
+	animationSpeed = 1
+	historyLength = 90
+
+	frame = 0
+	timeReference = 0
+	absoluteTime = 0
 	lastTextUpdate = 0
-	realTime = 0
-	leftMouseDown = False
-	middleMouseDown = False
-	rightMouseDown = False
-	if MULTIPROCESS:
-		gameSpeed = 200
-	else:
-		gameSpeed = 1
 
-	currentGame = 0
-	mousePos = None
-	while running:
-		# ----------- TIME SYNCHRONIZATION ------------
-		realTime = pygame.time.get_ticks()	
-		currentFps = clock.get_fps()
-
-		if INVARIANT_SIMULATION:
-			desiredFps = min(round(1/MIN_STEP_TIME * gameSpeed), 1/MIN_STEP_TIME)
-			stepTime = MIN_STEP_TIME
-		else:
-			desiredFps = 200
-			if not (currentFps == 0):				
-				stepTime = min(1/currentFps, MIN_STEP_TIME)
-			else:
-				stepTime = MIN_STEP_TIME
-
-			if gameSpeed < 1:
-				stepTime *= gameSpeed
-
-		# ----------------- EVENTS --------------------
+	paused = False
+	mouseDown = False
+	referenceMousePos = [0,0]
+	referenceFrame = 0
+	running = True
+	while running: 
+		# ----------------- EVENTS ------------------------
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
-				running = False
-			#----------------------------- Mouse buttons -----------------------------
-			if event.type == pygame.MOUSEBUTTONDOWN:	
+				running = False   
 
-				if event.button == 1:
-					leftMouseDown = True
-				if event.button == 2:
-					middleMouseDown = True
-				if event.button == 3:
-					rightMouseDown = True
-				if event.button == 4:
-					if gameSpeed < 1: 
-						gameSpeed *= 1.2 
-					else: 
-						gameSpeed = round(gameSpeed) + 1
-				if event.button == 5:
-					if gameSpeed <= 1: 
-						gameSpeed *= 1/1.2 
-					else: 
-						gameSpeed = round(gameSpeed) - 1
+			if event.type == pygame.MOUSEBUTTONDOWN:
+				paused = True
+				mouseDown = True
+				referenceFrame = frame
+				referenceMousePos = pygame.mouse.get_pos()
 
-				if gameSpeed > 1:
-					gameSpeed = round(gameSpeed)
+				if event.button == 4: animationSpeed *= 1.2
+				if event.button == 5: animationSpeed *= 1/1.2
+
+				timeReference = absoluteTime - time[frame]/animationSpeed
+				#     pass
 
 			if event.type == pygame.MOUSEBUTTONUP:
-				leftMouseDown = False
-				middleMouseDown = False
-				rightMouseDown = False
+				paused = False
+				mouseDown = False
 
-			#----------------------------- Mouse motion -----------------------------
 			if event.type == pygame.MOUSEMOTION:
-				pass
+				if mouseDown:
+					mousePos = pygame.mouse.get_pos()
+					frame = referenceFrame + round((mousePos[0] - referenceMousePos[0]) / 1210 * len(ball))
+					if frame >= len(ball): frame = len(ball) - 1
+					if frame < 0: frame = 0
 
-			#----------------------------- Key strokes -----------------------------
-			if event.type == pygame.KEYDOWN:
-				if event.key == pygame.K_LEFT:
-					currentGame -= 1
-					if currentGame < 0: currentGame = NUMBER_OF_GAMES - 1
+					timeReference = absoluteTime - time[frame]/animationSpeed
 
-				if event.key == pygame.K_RIGHT:
-					currentGame += 1
-					if currentGame >= NUMBER_OF_GAMES: currentGame = 0
 
-				if event.key == pygame.K_SPACE:
-					paused = not paused
+			if event.type == pygame.KEYDOWN:                           
+				if event.key == pygame.K_LEFT: 
+					pass               
 
 		keys = pygame.key.get_pressed()  # currently pressed keys
-
+			
 		if keys[pygame.K_LEFT]:
 			pass
-
-	# --------------------- GAME --------------------------
-		if not paused:
-			mousePos = pygame.mouse.get_pos()
-
-			games[currentGame].leftMouseDown = leftMouseDown
-			games[currentGame].middleMouseDown = middleMouseDown
-			games[currentGame].rightMouseDown = rightMouseDown
-
-			for game in games:
-				game.stepTime = stepTime
-				game.gameSpeed = gameSpeed
-				game.mousePosition = mousePos
-			
-			if MULTIPROCESS:
-				games = pool.map(work, games)
+		
+	# -------------- Synchronization ---------------------
+		absoluteTime = pygame.time.get_ticks()/1000
+		relativeTime = absoluteTime - timeReference
+		while relativeTime * animationSpeed > time[frame]:
+			if not paused: 
+				frame += 1
 			else:
-				for game in games:
-					for i in range(max(1, game.gameSpeed)):
-						game.update()
-
-			if MODE == "NE":
-				if allGamesFinished(games):
-					winnerBrains = [g.players[g.bestScorePlayer] for g in games]
-					population.createGeneration(winnerBrains, POPULATION_SIZE)
-					population.geneticCycle()
-
-					if population.generation % 100 == 0 and population.generation != 0:
-						with open(populationsFolder + 'games_'+ str(round(population.popSize/2)) +'-gen_'+ str(population.generation) + '-score_' + str(round(population.globalBestMember.gameEntity.score)) + '.obj', 'wb') as file_nn:
-							pickle.dump(population, file_nn)
-
-					games = createGames(population)
-
-			#----------------------------- Plotter -----------------------------
-			desired = games[currentGame].simulation.strikers[0].desiredVelocity.x
-			plotter.addData([games[currentGame].simulation.strikers[0].velocity.x, sign(desired)* min(abs(desired), MAX_SPEED*2)])
+				timeReference = absoluteTime - time[frame]/animationSpeed
+				break     
+		
+			if frame >= len(ball): 
+				frame = 0
+				timeReference = absoluteTime
+				break
+		
 
 	# ------------------- GRAPHICS ------------------------
 		graphics.drawBackgrond()
 
 		# Draw game 
-		game = games[currentGame]
 		graphics.drawField()
-		graphics.drawPuck(game.simulation.puck.position)
+		graphics.drawPuck(puckPos)
 		graphics.drawCamera(game.camera.puckPosition)
 		graphics.drawHistory(game.camera.positionHistory)
 

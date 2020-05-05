@@ -1,7 +1,7 @@
 from pygame.math import Vector2
 from Constants import *
 
-from HelperClasses import Line
+from UniTools import Line
 
 
 class Player():
@@ -21,7 +21,8 @@ class Player():
 		if self.side == "left":
 			self.game.simulation.strikers[0].postContact = self.checkHits
 		else:
-			self.game.simulation.strikers[1].postContact = self.checkHits
+			if not self.game.playground:
+				self.game.simulation.strikers[1].postContact = self.checkHits
 
 	def update(self, stepTime):
 		self.strategy.process(stepTime)
@@ -125,10 +126,10 @@ class Player():
 			self.hitQuality = 0
 		elif puckPos.x < STRIKER_AREA_WIDTH + PUCK_RADIUS + STRIKER_RADIUS:
 			self.puckInArea = True
-
-		if self.goals > self.opponent.goals + 1:
-			self.score += self.game.stepTime * WINNING_POINTS_PER_SEC
-	
+		if not self.game.playground:
+			if self.goals > self.opponent.goals + 1:
+				self.score += self.game.stepTime * WINNING_POINTS_PER_SEC
+		
 	def getRelativePos(self, pos):
 		if self.side == "left":
 			return Vector2(pos)

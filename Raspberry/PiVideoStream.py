@@ -2,8 +2,8 @@
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 from threading import Thread
-from HelperClasses import FPSCounter
-from HelperClasses import Repeater
+from UniTools import FPSCounter
+from UniTools import Repeater
 import cv2
  
 class PiVideoStream:

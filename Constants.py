@@ -19,7 +19,7 @@ STRIKER_RADIUS = 50
 # -------------- STRATEGY --------------
 DEFENSE_LINE = STRIKER_RADIUS + PUCK_RADIUS
 STOPPING_LINE = 200
-CLOSE_DISTANCE = PUCK_RADIUS # what is considered to be "close enough"
+CLOSE_DISTANCE = PUCK_RADIUS/3 # what is considered to be "close enough"
 
 # ------------- SIMULATION -------------
 MIN_STEP_TIME = 0.012
@@ -33,8 +33,9 @@ VELOCITY_DAMP = 0.995
 # -------------- MOTORS --------------
 # Striker limitations
 MAX_ACCELERATION = 30000
+MAX_DECELERATION = MAX_ACCELERATION * 4
 MAX_SPEED = 3000
-KP_GAIN = 10
+KP_GAIN = MAX_DECELERATION/(MAX_SPEED*2)
 
 # -------------- RULES --------------
 GOAL_LIMIT = 3
@@ -54,7 +55,7 @@ SHOT_POINT_MULTIPLIER = 1
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 50, 50)
-DIMMED_RED = (50,10,10)
+DIMMED_RED = (120,60,60)
 YELLOW = (255, 255, 0)
 DIMMED_YELLOW = (150, 150, 0)
 GREEN = (0, 255, 50)

@@ -6,33 +6,49 @@ from Functions import *
 from random import gauss, randrange
 
 class Simulation():
-	def __init__(self, game, mode):
+	def __init__(self, game, mode, playground):
 		self.game = game
 		self.stepTime = MIN_STEP_TIME
-		self.boundaries = [	Vector2(CHAMBER_SIZE, 	-FIELD_HEIGHT/2),
-							Vector2(0, 				-(FIELD_HEIGHT/2-CHAMBER_SIZE)), 
-							Vector2(0, 				-GOAL_SPAN/2),
-							Vector2(-100, 			-GOAL_SPAN/2),
-							Vector2(-100,			GOAL_SPAN/2),
-							Vector2(0, 				GOAL_SPAN/2),
-							Vector2(0, 				(FIELD_HEIGHT/2-CHAMBER_SIZE)),
-							Vector2(CHAMBER_SIZE, 				FIELD_HEIGHT/2),
-							Vector2(FIELD_WIDTH - CHAMBER_SIZE, FIELD_HEIGHT/2),
-							Vector2(FIELD_WIDTH, 				FIELD_HEIGHT/2 - CHAMBER_SIZE),
-							Vector2(FIELD_WIDTH,  				GOAL_SPAN/2),
-							Vector2(FIELD_WIDTH + 100,  		GOAL_SPAN/2),
-							Vector2(FIELD_WIDTH + 100,  		-GOAL_SPAN/2),
-							Vector2(FIELD_WIDTH,  				-GOAL_SPAN/2),
-							Vector2(FIELD_WIDTH,  				-(FIELD_HEIGHT/2-CHAMBER_SIZE)),
-							Vector2(FIELD_WIDTH - CHAMBER_SIZE, -FIELD_HEIGHT/2)
-						]
+		if playground:
+			self.boundaries = [	Vector2(CHAMBER_SIZE, 	-FIELD_HEIGHT/2),
+								Vector2(0, 				-(FIELD_HEIGHT/2-CHAMBER_SIZE)), 
+								Vector2(0, 				-GOAL_SPAN/2),
+								Vector2(-100, 			-GOAL_SPAN/2),
+								Vector2(-100,			GOAL_SPAN/2),
+								Vector2(0, 				GOAL_SPAN/2),
+								Vector2(0, 				(FIELD_HEIGHT/2-CHAMBER_SIZE)),
+								Vector2(CHAMBER_SIZE, 				FIELD_HEIGHT/2),
+								Vector2(FIELD_WIDTH - CHAMBER_SIZE, FIELD_HEIGHT/2),
+								Vector2(FIELD_WIDTH, 				FIELD_HEIGHT/2 - CHAMBER_SIZE),
+								Vector2(FIELD_WIDTH,  				-(FIELD_HEIGHT/2-CHAMBER_SIZE)),
+								Vector2(FIELD_WIDTH - CHAMBER_SIZE, -FIELD_HEIGHT/2)
+							]
+		else:
+			self.boundaries = [	Vector2(CHAMBER_SIZE, 	-FIELD_HEIGHT/2),
+								Vector2(0, 				-(FIELD_HEIGHT/2-CHAMBER_SIZE)), 
+								Vector2(0, 				-GOAL_SPAN/2),
+								Vector2(-100, 			-GOAL_SPAN/2),
+								Vector2(-100,			GOAL_SPAN/2),
+								Vector2(0, 				GOAL_SPAN/2),
+								Vector2(0, 				(FIELD_HEIGHT/2-CHAMBER_SIZE)),
+								Vector2(CHAMBER_SIZE, 				FIELD_HEIGHT/2),
+								Vector2(FIELD_WIDTH - CHAMBER_SIZE, FIELD_HEIGHT/2),
+								Vector2(FIELD_WIDTH, 				FIELD_HEIGHT/2 - CHAMBER_SIZE),
+								Vector2(FIELD_WIDTH,  				GOAL_SPAN/2),
+								Vector2(FIELD_WIDTH + 100,  		GOAL_SPAN/2),
+								Vector2(FIELD_WIDTH + 100,  		-GOAL_SPAN/2),
+								Vector2(FIELD_WIDTH,  				-GOAL_SPAN/2),
+								Vector2(FIELD_WIDTH,  				-(FIELD_HEIGHT/2-CHAMBER_SIZE)),
+								Vector2(FIELD_WIDTH - CHAMBER_SIZE, -FIELD_HEIGHT/2)
+							]
 		self.strikers = []
 		self.puck = None
 		self.strikers.append(Striker(self, 100,0, STRIKER_RADIUS, STRIKER_MASS, mode="AI"))
-		if mode == "vsAI" or mode == "vsNN":
-			self.strikers.append(Striker(self, FIELD_WIDTH - 100, 0, STRIKER_RADIUS, STRIKER_MASS, mode="PLAYER"))
-		else:
-			self.strikers.append(Striker(self, FIELD_WIDTH - 100, 0, STRIKER_RADIUS, STRIKER_MASS, mode="AI"))
+		if not playground:
+			if mode == "vsAI" or mode == "vsNN":
+				self.strikers.append(Striker(self, FIELD_WIDTH - 100, 0, STRIKER_RADIUS, STRIKER_MASS, mode="PLAYER"))
+			else:
+				self.strikers.append(Striker(self, FIELD_WIDTH - 100, 0, STRIKER_RADIUS, STRIKER_MASS, mode="AI"))
 
 		self.spawnPuck()
 

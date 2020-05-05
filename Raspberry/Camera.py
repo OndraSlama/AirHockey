@@ -4,7 +4,7 @@ from threading import Thread
 from picamera.array import PiRGBArray
 from picamera import PiCamera
 from PiVideoStream import PiVideoStream
-from HelperClasses import Filter, FPSCounter, Repeater
+from UniTools import Filter, FPSCounter, Repeater, toTuple, toVector, toList
 from pygame.math import Vector2
 from Constants import *
 import imutils
@@ -406,7 +406,7 @@ class Camera():
 		pass
 
 	def _pixelsToUnits(self, srcPos):	
-		srcPos = self._toVector(srcPos)
+		srcPos = toVector(srcPos)
 		src = np.float32([[srcPos.x, srcPos.y]])	
 		src = np.array([src])
 
@@ -414,24 +414,12 @@ class Camera():
 		return Vector2(int(out[0][0][0]), int(out[0][0][1]))
 
 	def _unitsToPixels(self, srcPos):	
-		srcPos = self._toVector(srcPos)
+		srcPos = toVector(srcPos)
 		src = np.float32([[srcPos.x, srcPos.y]])	
 		src = np.array([src])
 
 		out = cv2.perspectiveTransform(src, self.u2pTranformMatrix)
-		return Vector2(int(out[0][0][0]), int(out[0][0][1]))
-
-	def _toTuple(self, vector):
-		if isinstance(vector, Vector2):
-			return (int(vector.x), int(vector.y))
-		else:
-			return (int(vector[0]), int(vector[1]))
-	
-	def _toVector(self, vector):
-		if isinstance(vector, Vector2):
-			return Vector2(int(vector.x), int(vector.y))
-		else:
-			return Vector2(int(vector[0]), int(vector[1]))	
+		return Vector2(int(out[0][0][0]), int(out[0][0][1]))	
 		
 	def _createTransformMatrices(self, source):
 		dst = np.float32([[0, FIELD_HEIGHT/2], [FIELD_WIDTH, FIELD_HEIGHT/2], [FIELD_WIDTH, -FIELD_HEIGHT/2], [0, -FIELD_HEIGHT/2]])
@@ -445,14 +433,14 @@ class Camera():
 		lineType 	= 2
 
 		cv2.putText(self.frame, text,
-			self._toTuple(position), 
+			toTuple(position), 
 			font, 
 			fontScale,
 			fontColor,
 			lineType)
 	
 	def _drawLine(self, startPoint = (0,10), endPoint = (250, 10), color = (0, 255, 0),  thickness = 2):		
-		self.frame = cv2.line(self.frame, self._toTuple(startPoint), self._toTuple(endPoint), color, thickness)
+		self.frame = cv2.line(self.frame, toTuple(startPoint), toTuple(endPoint), color, thickness)
 
 	def _lineHalf(self, startPoint, endPoint):
 		x = round((startPoint[0] + endPoint[0])/2)
@@ -460,16 +448,16 @@ class Camera():
 		return (x, y)
 
 	def _drawPoint(self, center, color = (0, 255, 255), size = 5):
-		center = self._toTuple(center)
+		center = toTuple(center)
 		cv2.circle(self.frame, center, size, color, -1)
 	
 	def _drawPuck(self, center, color = (0, 0, 255)):
-		center = self._toTuple(center)
+		center = toTuple(center)
 		cv2.circle(self.frame, center, PUCK_RADIUS, color, 1)
 		cv2.circle(self.frame, center, 2, color, -1)
 
 	def _drawField(self, npPoints, color = (0, 255, 0),  thickness = 3):
-		points = [self._toTuple(p) for p in npPoints]
+		points = [toTuple(p) for p in npPoints]
 
 		for i in range(len(points)-1):
 			self._drawLine(points[i], points[i + 1])

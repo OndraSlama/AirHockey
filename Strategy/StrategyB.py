@@ -1,6 +1,6 @@
 from Strategy.BaseStrategy import BaseStrategy
 from Strategy.StrategyStructs import *
-from HelperClasses import Line
+from UniTools import Line
 from pygame.math import Vector2
 from numpy import sign
 from Constants import *

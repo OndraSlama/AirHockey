@@ -2,7 +2,10 @@ from pygame.math import Vector2
 import time
 from threading import Thread
 from numpy import sign
+import matplotlib
+import matplotlib.pyplot as plt
 
+#----------------------------- Gandalf's custom filter -----------------------------
 class Filter():
 	def __init__(self, th, lg, hg, isVector = True):
 		self.threshold = th
@@ -80,7 +83,7 @@ class Filter():
 
 		return self.filtered
 
-
+#----------------------------- Gandalf's FPS counter -----------------------------
 class FPSCounter():
 	def __init__(self, movingAverage = 10, updateEvery = 0.2):
 		self.currentFps = 0
@@ -170,30 +173,51 @@ class FPSCounter():
 		# return ("Curr: " + str(round(self.currentFps, 2)) + "; Avg: " + str(round(self.averageFps, 2)) + "; Last " + self.movingAverage + ": " + str(round(self.movingAverageFps,2)))
 		return ("Curr: {0:6} Avg: {1:6} Last {2:2}: {3:6}".format(str(round(self.currentFps, 2)), str(round(self.averageFps, 2)), self.movingAverage, str(round(self.movingAverageFps,2))))
 
+#----------------------------- Gandalf's function repeater -----------------------------
 class Repeater():
-	def __init__(self, repeatFunction, every = 0.3):
+	def __init__(self, repeatFunction, every = 0.3, passStepTime = False):
 		self.repeatFunction = repeatFunction
 		self.repeatEvery = every
+		self.passStepTime = passStepTime
 		self.stopped = True
+		self.lastStepAt = time.time()
+		self.runTime = 0
 
 	def repeate(self):
+		
 		while True:
-			self.repeatFunction()
-			time.sleep(self.repeatEvery)
-			
+			stepTime = time.time() - self.lastStepAt
+			self.runTime += time.time() - self.lastStepAt
+			self.lastStepAt = time.time()
+
+			if self.passStepTime:
+				self.repeatFunction(stepTime)
+			else:
+				self.repeatFunction()
+
+
+			sleepTime = self.repeatEvery - (time.time() - self.lastStepAt)
+			if sleepTime > 0:
+				time.sleep(sleepTime)
+
 			if self.stopped:
-				print("Repeater stopped.")
 				return
 
 	def start(self):
 		if self.stopped:
 			self.stopped = False
+			self.lastStepAt = time.time()
+			self.runTime = 0
 			Thread(target=self.repeate, args=()).start()
 			return self
+		else:
+			print("Repeater alredy running.")
 
+	
 	def stop(self):
 		self.stopped = True
 
+#----------------------------- Gandalf's Line math class -----------------------------
 class Line():
 	def __init__(self, startPos = Vector2(0, 0), endPos = Vector2(0, 0)):
 		self.start = Vector2(startPos)
@@ -331,4 +355,142 @@ class Line():
 		else:
 			return None
 
+ACTIVATE_PLOTTER = 0
+class Plotter():
+	def __init__(self, linesNum = 1, lastSeconds = 3):
+		self.history = lastSeconds
+		self.linesNum = linesNum
+		self.repeater = Repeater(self.update, 1/10)		
+		self.plotStarted = False
+		self.startTime = time.time()
 
+		
+
+		self.lines = []
+		self.xData = []
+		self.yData = []
+		self.timestamps = []
+
+		self.prevTimestamps = []
+
+		for i in range(self.linesNum):
+			self.xData.append([])
+			self.yData.append([])
+			self.timestamps.append([])
+			self.prevTimestamps.append([])
+
+		if ACTIVATE_PLOTTER:
+			self.repeater.start()
+
+		# plt.show()
+		# plt.show()
+
+	def addData(self, data):
+		for i in range(len(data)):
+			if data[i] is not None and i < len(self.lines):
+				self.yData[i].append(data[i])
+				self.xData[i].append(time.time() - self.startTime)
+				self.timestamps[i].append(time.time() - self.startTime)
+				
+		for i in range(self.linesNum):
+			try:
+				while self.timestamps[i][0] < self.timestamps[i][-1] - self.history:
+					self.yData[i].pop(0)
+					self.xData[i].pop(0)
+					self.timestamps[i].pop(0)
+			except: pass
+
+	def update(self):
+		if not self.plotStarted:
+			self.fig, self.ax = plt.subplots()
+			plt.pause(0.0001)
+			plt.ion()	
+			plt.xlabel('Time [s]')
+			plt.ylabel('Value')	
+			plt.grid()	
+
+			for i in range(self.linesNum):
+				line, = self.ax.plot([])
+				self.lines.append(line)
+
+			self.plotStarted = True
+		else:
+			for i in range(len(self.lines)):	
+				self.lines[i].set_xdata(self.xData[i])		
+				self.lines[i].set_ydata(self.yData[i])
+			
+			try:
+				minY = None
+				maxY = None
+				minX = None
+				maxX = None
+				changed = False
+
+				for i in range(len(self.lines)):
+					minY = min(self.yData[i]) if minY is None or min(self.yData[i]) < minY else minY
+					maxY = max(self.yData[i]) if maxY is None or max(self.yData[i]) > maxY else maxY
+					minX = min(self.xData[i]) if minX is None or min(self.xData[i]) < minX else minX
+					maxX = max(self.xData[i]) if maxX is None or max(self.xData[i]) > maxX else maxX
+
+					if not (self.timestamps[i] == self.prevTimestamps[i]):
+						self.prevTimestamps[i] = self.timestamps[i].copy()
+						changed = True
+
+
+				if changed:
+					plt.ylim(minY*1.1, maxY*1.1)
+					plt.xlim(minX, maxX)
+			except:
+				pass
+
+
+			plt.draw()
+			plt.pause(0.0001)
+
+
+
+
+#----------------------------- Gandalf's Helper Functions -----------------------------
+def toList(vector, roundDigit = 0):
+	if isinstance(vector, Vector2):
+		return [round(vector.x, roundDigit), round(vector.y, roundDigit)]
+	else:
+		return [round(vector[0], roundDigit), round(vector[1], roundDigit)]
+
+def toTuple(vector, roundDigit = 0):
+	if isinstance(vector, Vector2):
+		return (round(vector.x, roundDigit), round(vector.y, roundDigit))
+	else:
+		return (round(vector[0], roundDigit), round(vector[1], roundDigit))
+
+def toVector(vector, roundDigit = 0):
+	if isinstance(vector, Vector2):
+		return Vector2(round(vector.x, roundDigit), round(vector.y, roundDigit))
+	else:
+		return Vector2(round(vector[0], roundDigit), round(vector[1], roundDigit))
+
+if __name__ == "__main__":
+	plotter = Plotter(linesNum=2)
+	time.sleep(.4)
+	plotter.addData([1, .5])
+	plotter.addData([1, 1])
+	time.sleep(.4)
+	plotter.addData([1, .4])
+	time.sleep(.4)
+	plotter.addData([1, 2])
+	time.sleep(.01)
+	plotter.addData([1, -1])
+	time.sleep(.01)
+	plotter.addData([1, .5])
+	plotter.addData([1, 1])
+	time.sleep(.01)
+	plotter.addData([1, .01])
+	time.sleep(.01)
+	plotter.addData([1, 2])
+	for i in range(100):
+		time.sleep(.01)
+		plotter.addData([i/10])
+	for i in range(100):
+		time.sleep(.01)
+		plotter.addData([-i/10])
+	print(plotter.xData)

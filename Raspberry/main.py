@@ -1,6 +1,6 @@
 from Constants import *
 from Strategy import StrategyD
-from HelperClasses import FPSCounter, Repeater
+from UniTools import FPSCounter, Repeater
 import time
 from App.AirHockeyApp import AirHockeyApp
 

@@ -1,4 +1,4 @@
-from HelperClasses import Filter
+from UniTools import Filter
 from pygame.math import Vector2
 from Constants import *
 from random import gauss
