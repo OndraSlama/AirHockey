@@ -34,6 +34,8 @@ class StrategyD(BaseStrategy):
 
 		def subCase(state):
 			return state == self.subState
+
+		self.getPredictedPuckPosition(self.puck.position, 1)
 		
 		if case(DEFEND):
 			# 3 Main decisions		
@@ -93,7 +95,8 @@ class StrategyD(BaseStrategy):
 				# wait a bit for decision
 				if self.gameTime > self.lastPuckStop + 0.15:
 					randomNum = random()
-					chosen = False
+					chosen = False				
+
 				#----------------------------- Decision how should striker aim at goal -----------------------------
 					if not self.puck.state == ACURATE and self.puck.speedMagnitude < 30: # try wall bounce only if puck is almost still
 						topBounce = Line(self.predictedPosition, Vector2(FIELD_WIDTH*0.9, FIELD_HEIGHT))

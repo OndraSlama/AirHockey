@@ -1,11 +1,11 @@
 import pygame
-from Graphics.Graphics import Graphics
+from Graphics.Graphics import AHGraphics
 from Constants import *
 from Simulation import Simulation
 from Game.Game import Game
 from multiprocessing import Pool
 from Neuroevolution.Population import Population
-from UniTools import Plotter, toList
+from UniTools import *
 from numpy import sign
 import pickle
 import warnings
@@ -41,9 +41,9 @@ def main():	 # Main ------------------------------------------------------------
 
 	pygame.init()	
 	clock = pygame.time.Clock()
-	graphics = Graphics(WIDTH, HEIGHT)
+	graphics = AHGraphics('Air Hockey', WIDTH, HEIGHT)
 	games = [Game(MODE, PLAYGROUND) for i in range(NUMBER_OF_GAMES)]
-	plotter = Plotter(linesNum=2, lastSeconds=20)
+	# plotter = Plotter(linesNum=2, lastSeconds=20)
 
 	if LOAD_POPULATION_FROM_FILE and MODE == "NE":
 		with open(populationsFolder + populationToLoad, 'rb') as file_nn:
@@ -174,8 +174,9 @@ def main():	 # Main ------------------------------------------------------------
 					games = createGames(population)
 
 			#----------------------------- Plotter -----------------------------
-			desired = games[currentGame].simulation.strikers[0].desiredVelocity.x
-			plotter.addData([games[currentGame].simulation.strikers[0].velocity.x, sign(desired)* min(abs(desired), MAX_SPEED*2)])
+			# desired = games[currentGame].simulation.strikers[0].desiredVelocity.x
+			# plotter.addData([games[currentGame].simulation.strikers[0].velocity.x, sign(desired)* min(abs(desired), MAX_SPEED*2)])
+			# plotter.addData([games[currentGame].simulation.strikers[0].acceleration.x, games[currentGame].simulation.strikers[0].acceleration.y])
 
 	# ------------------- GRAPHICS ------------------------
 		graphics.drawBackgrond()
@@ -194,13 +195,13 @@ def main():	 # Main ------------------------------------------------------------
 
 		# Render text
 		if realTime - lastTextUpdate > 250:
-			graphics.startCreatingTexts()
+			graphics.startCreatingTexts(margin=[10,10,10,0])
 			graphics.createText("Air Hockey", size=40, alignment="center")
 			graphics.createText("Game simulation", line=2, alignment="center")
 			if PLAYGROUND:
-				graphics.createText(str(game.players[0].goals) + ":0", size=60, line=3, alignment="center")
+				graphics.createText(str(game.players[0].goals) + ":0", size=60, line=4, alignment="center")
 			else:
-				graphics.createText(str(game.players[0].goals) + ":" + str(game.players[1].goals), size=60, line=3, alignment="center")
+				graphics.createText(str(game.players[0].goals) + ":" + str(game.players[1].goals), size=60, line=4, alignment="center")
 
 			graphics.createText("·" * 50, line=6, alignment="center")
 			graphics.createText("FPS: " + str(round(currentFps, 2)))

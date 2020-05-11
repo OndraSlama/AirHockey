@@ -4,33 +4,20 @@ from pygame.math import Vector2
 from math import floor
 from Constants import *
 from Functions import *
-from UniTools import toList
+from UniTools import *
 from Strategy.StrategyStructs import *
 
+class AHGraphics(Graphics):
+	def __init__(self, title = "Air Hockey", w = 100, h = 100):
+		super().__init__(title, w, h)
 
-
-class Graphics:
-	def __init__(self, w, h):
-		self.pixelWidth = w
-		self.pixelHeight = h
-		self.window = pygame.display.set_mode((self.pixelWidth, self.pixelHeight))
-		self.blits = {}
-		self.index = 0
-
-		# Set text grid
-		self.textLinePos = [i * TEXT_SIZE for i in range(floor(h/TEXT_SIZE))] 
-		self.textColumnPos = [i * COLUMN_SIZE for i in range(NO_OF_COLUMNS)]
-
-		pygame.display.set_caption('Air Hockey')
-
-	def drawBackgrond(self):
-		# Draw background
-		self.window.fill(WHITE)
+	def startCreatingTexts(self, textSize = TEXT_SIZE, font = "Arial", color = BLACK, x=0, y=0, lineSize = TEXT_SIZE, columnSize = COLUMN_SIZE, margin = [0,0,0,0]):
+		super().startCreatingTexts(textSize, font, color, x, y, lineSize, columnSize, margin)
 
 	def drawField(self):
-		rect = [u2pX(0), u2pY(FIELD_HEIGHT/2), FIELD_PIXEL_WIDTH, FIELD_PIXEL_HEIGHT]
-		pygame.draw.rect(self.window, [el * 1.8 for el in GREY], rect)
-		pygame.draw.rect(self.window, GREY, rect, 4)
+		rect = [0, FIELD_HEIGHT/2, FIELD_WIDTH, FIELD_HEIGHT]
+		self.drawRect(rect, [el * 1.8 for el in GREY])
+		self.drawRect(rect, GREY, 4)
 
 		# leftGoalCoords = [u2pX(0), u2pY(GOAL_SPAN/2), u2pX(0), u2pY(-GOAL_SPAN/2)]
 		# pygame.draw.line(self.window, WHITE, (leftGoalCoords[0], leftGoalCoords[1]), (leftGoalCoords[2], leftGoalCoords[3]), 5)
@@ -39,25 +26,27 @@ class Graphics:
 		# rightGoalCoords = [u2pX(FIELD_WIDTH), u2pY(GOAL_SPAN/2), u2pX(FIELD_WIDTH), u2pY(-GOAL_SPAN/2)]
 		self.drawLine((FIELD_WIDTH, GOAL_SPAN/2), (FIELD_WIDTH, -GOAL_SPAN/2), WHITE,  5)
 
-		pygame.gfxdraw.aacircle(self.window, u2pX(FIELD_WIDTH/2), u2pY(0), u2pDist(50), GREY)
+		# pygame.gfxdraw.aacircle(self.window, u2pX(FIELD_WIDTH/2), u2pY(0), u2pDist(50), GREY)
+		self.drawCircle((FIELD_WIDTH/2, 0), 50, GREY, 1)
 		self.drawLine((STRIKER_AREA_WIDTH, FIELD_HEIGHT/2), (STRIKER_AREA_WIDTH, -FIELD_HEIGHT/2), GREY)
 		self.drawLine((FIELD_WIDTH - STRIKER_AREA_WIDTH, FIELD_HEIGHT/2), (FIELD_WIDTH - STRIKER_AREA_WIDTH, -FIELD_HEIGHT/2), GREY)
 
 		# Field chamber
-		pygame.draw.polygon(self.window, GREY, ((u2pX(0), u2pY(FIELD_HEIGHT/2)), (u2pX(0), u2pY(FIELD_HEIGHT/2 - CHAMBER_SIZE)), (u2pX(CHAMBER_SIZE), u2pY(FIELD_HEIGHT/2))))
-		pygame.draw.polygon(self.window, GREY, ((u2pX(0), u2pY(-FIELD_HEIGHT/2)), (u2pX(0), u2pY(-FIELD_HEIGHT/2 + CHAMBER_SIZE)), (u2pX(CHAMBER_SIZE), u2pY(-FIELD_HEIGHT/2))))
-		pygame.draw.polygon(self.window, GREY, ((u2pX(FIELD_WIDTH), u2pY(FIELD_HEIGHT/2)), (u2pX(FIELD_WIDTH), u2pY(FIELD_HEIGHT/2 - CHAMBER_SIZE)), (u2pX(FIELD_WIDTH - CHAMBER_SIZE), u2pY(FIELD_HEIGHT/2))))
-		pygame.draw.polygon(self.window, GREY, ((u2pX(FIELD_WIDTH), u2pY(-FIELD_HEIGHT/2)), (u2pX(FIELD_WIDTH), u2pY(-FIELD_HEIGHT/2 + CHAMBER_SIZE)), (u2pX(FIELD_WIDTH - CHAMBER_SIZE), u2pY(-FIELD_HEIGHT/2))))
-		
+		self.drawPolygon(((0, FIELD_HEIGHT/2), (0, FIELD_HEIGHT/2 - CHAMBER_SIZE), (CHAMBER_SIZE, FIELD_HEIGHT/2)),                                      GREY)
+		self.drawPolygon(((0, -FIELD_HEIGHT/2), (0, -FIELD_HEIGHT/2 + CHAMBER_SIZE), (CHAMBER_SIZE, -FIELD_HEIGHT/2)),                                   GREY)
+		self.drawPolygon(((FIELD_WIDTH, FIELD_HEIGHT/2), (FIELD_WIDTH, FIELD_HEIGHT/2 - CHAMBER_SIZE), (FIELD_WIDTH - CHAMBER_SIZE, FIELD_HEIGHT/2)),    GREY)
+		self.drawPolygon(((FIELD_WIDTH, -FIELD_HEIGHT/2), (FIELD_WIDTH, -FIELD_HEIGHT/2 + CHAMBER_SIZE), (FIELD_WIDTH - CHAMBER_SIZE, -FIELD_HEIGHT/2)), GREY)
+	
 
 	def drawCamera(self, pos):
 		self.drawLine((0, pos.y), (FIELD_WIDTH, pos.y), DIMMED_RED)
 		self.drawLine((pos.x, FIELD_HEIGHT/2), (pos.x, -FIELD_HEIGHT/2), DIMMED_RED)
-		pygame.gfxdraw.aacircle(self.window, u2pX(pos.x), u2pY(pos.y), u2pDist(PUCK_RADIUS), RED)
+		self.drawCircle((pos.x, pos.y), PUCK_RADIUS, RED, 1)
+		# pygame.gfxdraw.aacircle(self.window, u2pX(pos.x), u2pY(pos.y), u2pDist(PUCK_RADIUS), RED)
 
 	def drawHistory(self, history):
 		for pos in history:
-			self.drawCircle(pos, PUCK_RADIUS/10, YELLOW)
+			self.drawCircle(pos, PUCK_RADIUS/10, RED)
 
 	def drawStrategy(self, strategy, color = GREEN):
 		try:		
@@ -128,9 +117,10 @@ class Graphics:
 		# line1 = Line(Vector2(600, 0), Vector2(600, 200))
 		# point1 = strategy.getBothCoordinates(line1, y = FIELD_HEIGHT/2)
 		# self.drawLine(line1.start, line1.end, YELLOW)
-		# self.drawCircle(point1, STRIKER_RADIUS/10, YELLOW)
+		# self.drawCircle(point1, STRIKER_RADIUS/10, YELLOW)	
 
 
+	#----------------------------- Basic function -----------------------------
 	def drawPuck(self, pos):
 		self.drawCircle(pos, PUCK_RADIUS, RED)
 		self.drawCircle(pos, PUCK_RADIUS * 0.8, DIMMED_RED)
@@ -146,50 +136,20 @@ class Graphics:
 		self.drawCircle(pos, STRIKER_RADIUS * 0.85,  color)
 		self.drawCircle(pos, STRIKER_RADIUS * 0.45,  [el * 0.4 for el in color])
 		self.drawCircle(pos, STRIKER_RADIUS * 0.4,  color)
-		
-	def drawCircle(self, _pos, rad, color):
-		pos = toList(_pos)
-		pygame.gfxdraw.aacircle(self.window, u2pX(pos[0]), u2pY(pos[1]), u2pDist(rad), color)
-		pygame.gfxdraw.filled_circle(self.window, u2pX(pos[0]), u2pY(pos[1]), u2pDist(rad), color)
+
+	
+	#----------------------------- Low level function -----------------------------
+	def drawRect(self, _rect, color, thickness = None):
+		super().drawRect([u2pX(_rect[0]), u2pY(_rect[1]), u2pDist(_rect[2]), u2pDist(_rect[3])], color, thickness)
+
+	def drawCircle(self, _pos, rad, color, thickness = None):
+		super().drawCircle(u2pXY(toList(_pos)), u2pDist(rad), color, thickness)
+
+	def drawPolygon(self, _vertices, color):
+		vertices = [u2pXY(point) for point in _vertices]
+		super().drawPolygon(vertices, color)	
 
 	def drawLine(self, startPos, endPos, color, thickness = 1):
-		if thickness == 1:
-			pygame.draw.aaline(self.window, color, (u2pX(startPos[0]), u2pY(startPos[1])), (u2pX(endPos[0]), u2pY(endPos[1])))
-		else:
-			pygame.draw.line(self.window, color, (u2pX(startPos[0]), u2pY(startPos[1])), (u2pX(endPos[0]), u2pY(endPos[1])), 5)
+		super().drawLine(u2pXY(toList(startPos)), u2pXY(toList(endPos)), color, thickness)
+		
 
-	# --------------------------------- TEXT STUFF --------------------------------------
-	def startCreatingTexts(self):
-		self.blits = []
-		self.index = 0
-
-	def createText(self, string, size = TEXT_SIZE, color = BLACK, line = None, column = 0, x = None, y = None, alignment = "topleft"):
-		if line is None: line = self.index	
-		if alignment == "topleft":
-			if x is None:  x = self.textColumnPos[column]
-			if y is None:  y = self.textLinePos[line]
-		elif alignment == "center":
-			if x is None:  x = self.textColumnPos[column] + round(COLUMN_SIZE/2)
-			if y is None:  y = self.textLinePos[line] + round(size/2)
-		else:
-			raise Exception("Wrong alignment specification")
-			
-		myfont = pygame.font.SysFont('Arial', size)
-		textsurface = myfont.render(string, False, color)
-		textRect = eval("textsurface.get_rect(" + alignment + "=(x, y))")		
-		self.blits.append(Text(textsurface, textRect))
-		self.index = line + 1	
-
-	def update(self):
-		self.drawBlits()
-		pygame.display.update()
-
-	def drawBlits(self):
-		for blit in self.blits:
-			self.window.blit(blit.surface, blit.rect)
-
-
-class Text():
-	def __init__(self, sur, rect):
-		self.surface = sur
-		self.rect = rect

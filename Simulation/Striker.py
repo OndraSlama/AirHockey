@@ -1,7 +1,8 @@
 from Simulation.Body import Body
 from Constants import *
 from pygame.math import Vector2
-from Functions import getValueInXYdir, isDecelerating
+from Functions import getValueInXYdir, getAccelInXYdir, getSpeedInXYdir
+from UniTools import Plotter
 # from numpy import sign
 
 class Striker(Body):
@@ -10,6 +11,8 @@ class Striker(Body):
 
 		self.desiredVelocity = Vector2(0, 0)
 		self.mode = mode
+
+		self.plotter = Plotter(linesNum=4, lastSeconds=20)
 
 	def update(self):
 
@@ -27,7 +30,7 @@ class Striker(Body):
 		#----------------------------- limit desired velocity -----------------------------
 		vel =  Vector2(self.desiredVelocity)
 		# if self.mode == "AI":
-		[xMaxSpeed, yMaxSpeed] = getValueInXYdir(vel.x, vel.y, MAX_SPEED)
+		[xMaxSpeed, yMaxSpeed] = getSpeedInXYdir(vel.x, vel.y, MAX_SPEED)
 		# else:
 		# 	maxSpeed = getValueInXYdir(self.desiredVelocity.x, self.desiredVelocity.y, MAX_SPEED).magnitude()
 
@@ -40,11 +43,12 @@ class Striker(Body):
 		# if vel.magnitude() > maxSpeed:
 		# 	vel.scale_to_length(maxSpeed)
 
-		#----------------------------- limit acceleration to desired velocity -----------------------------
+		#----------------------------- limit acceleration -----------------------------
 		acc = (vel - self.velocity)/self.simulation.stepTime
 		
 		# if self.mode == "AI":
-		[xMaxAcc, yMaxAcc] = getValueInXYdir(acc.x, acc.y, MAX_DECELERATION if isDecelerating(*self.velocity, *vel) else MAX_ACCELERATION)
+		[xMaxAcc, yMaxAcc] = getAccelInXYdir(vel.x, vel.y, self.velocity.x, self.velocity.y, MAX_ACCELERATION, MAX_DECELERATION)		
+
 		# else:
 		# 	maxAcc = getValueInXYdir(acc.x, acc.y, MAX_ACCELERATION).magnitude()
 
@@ -61,4 +65,6 @@ class Striker(Body):
 		# 		acc.scale_to_length(maxAcc)
 		
 		self.acceleration = acc
+		self.plotter.addData([self.acceleration.x/10, vel.x, self.velocity.x, self.acceleration.y/10])
+		
 

@@ -1,8 +1,8 @@
 import pygame
-import pygame.math as gameMath
+from pygame.math import Vector2
 import math
 import numpy as np
-from Graphics.Graphics import Graphics
+from Graphics.Graphics import AHGraphics
 from Constants import *
 from Functions import *
 import pickle
@@ -19,10 +19,10 @@ def main():	 # Main ------------------------------------------------------------
 	#----------------------------- Init -----------------------------
 	pygame.init()	
 	clock = pygame.time.Clock()
-	graphics = Graphics(WIDTH, HEIGHT)
+	graphics = AHGraphics('Air Hockey', WIDTH, HEIGHT)
 
 	#----------------------------- Load data -----------------------------
-	with open('Recordings/Recording_2020-05-03_15-56-21.txt') as f:
+	with open('Recordings/Recording_2020-05-03_16-07-19.txt') as f:
 		data = json.load(f)
 
 		#----------------------------- Temp fix for datetime fuckup -----------------------------
@@ -39,17 +39,18 @@ def main():	 # Main ------------------------------------------------------------
 
 		#----------------------------- Temp data alocation -----------------------------
 		time = [row[0] for row in data]
-		puckPos = [row[1] for row in data]
-		puckVel = [row[2] for row in data]
-		strikerPos = [row[3] for row in data]
-		strikerVel = [row[4] for row in data]
-		desiredPos = [row[5] for row in data]
-		predictedPos = [row[6] for row in data]
+		gameTime = [row[1] for row in data]
+		puckPos = [row[2] for row in data]
+		puckVel = [row[3] for row in data]
+		strikerPos = [row[4] for row in data]
+		strikerVel = [row[5] for row in data]
+		desiredPos = [row[6] for row in data]
+		predictedPos = [row[7] for row in data]
 		
 
 	#----------------------------- Loop -----------------------------
 	animationSpeed = 1
-	historyLength = 90
+	historyLength = 40
 
 	frame = 0
 	timeReference = 0
@@ -86,8 +87,8 @@ def main():	 # Main ------------------------------------------------------------
 			if event.type == pygame.MOUSEMOTION:
 				if mouseDown:
 					mousePos = pygame.mouse.get_pos()
-					frame = referenceFrame + round((mousePos[0] - referenceMousePos[0]) / 1210 * len(ball))
-					if frame >= len(ball): frame = len(ball) - 1
+					frame = referenceFrame + round((mousePos[0] - referenceMousePos[0]) / 1210 * len(time))
+					if frame >= len(time): frame = len(time) - 1
 					if frame < 0: frame = 0
 
 					timeReference = absoluteTime - time[frame]/animationSpeed
@@ -103,6 +104,8 @@ def main():	 # Main ------------------------------------------------------------
 			pass
 		
 	# -------------- Synchronization ---------------------
+		realTime = pygame.time.get_ticks()	
+		currentFps = clock.get_fps()
 		absoluteTime = pygame.time.get_ticks()/1000
 		relativeTime = absoluteTime - timeReference
 		while relativeTime * animationSpeed > time[frame]:
@@ -112,7 +115,7 @@ def main():	 # Main ------------------------------------------------------------
 				timeReference = absoluteTime - time[frame]/animationSpeed
 				break     
 		
-			if frame >= len(ball): 
+			if frame >= len(time): 
 				frame = 0
 				timeReference = absoluteTime
 				break
@@ -123,79 +126,100 @@ def main():	 # Main ------------------------------------------------------------
 
 		# Draw game 
 		graphics.drawField()
-		graphics.drawPuck(puckPos)
-		graphics.drawCamera(game.camera.puckPosition)
-		graphics.drawHistory(game.camera.positionHistory)
+		graphics.drawPuck(puckPos[frame])
+		# graphics.drawCamera(game.camera.puckPosition)
+		graphics.drawHistory(puckPos[max(frame - historyLength, 0):frame])
 
-		for striker in game.simulation.strikers:
-			graphics.drawStriker(striker.position, GREY)
+		# for striker in game.simulation.strikers:
+		graphics.drawStriker(strikerPos[frame], GREY)
+
+		# draw desired position
+		graphics.drawCircle(desiredPos[frame], STRIKER_RADIUS/10, GREEN)
+		graphics.drawLine(strikerPos[frame], desiredPos[frame], GREEN)
+		
+		# draw predicted
+		graphics.drawCircle(predictedPos[frame], STRIKER_RADIUS/10, YELLOW)
+		graphics.drawLine(puckPos[frame], predictedPos[frame], YELLOW)
+
+		# draw line to goal
+		graphics.drawLine(puckPos[frame], [0,0], YELLOW)
+		
+		# draw line to goal
+		graphics.drawLine(puckPos[frame], [0,0], YELLOW)
+
+		graphics.drawSlider(frame/len(time), [10, 720, 360, 15])
 			
-		graphics.drawStrategy(game.players[0].strategy)
+		# graphics.drawStrategy(game.players[0].strategy)
 
 		# Render text
 		if realTime - lastTextUpdate > 250:
-			graphics.startCreatingTexts()
+			graphics.startCreatingTexts(margin=[10,0,10,0], y=20)
 			graphics.createText("Air Hockey", size=40, alignment="center")
-			graphics.createText("Game simulation", line=2, alignment="center")
-			if PLAYGROUND:
-				graphics.createText(str(game.players[0].goals) + ":0", size=60, line=3, alignment="center")
-			else:
-				graphics.createText(str(game.players[0].goals) + ":" + str(game.players[1].goals), size=60, line=3, alignment="center")
+			graphics.createText("Game recording visualisation", line=2, alignment="center")
+		# 	if PLAYGROUND:
+		# 		graphics.createText(str(game.players[0].goals) + ":0", size=60, line=3, alignment="center")
+		# 	else:
+		# 		graphics.createText(str(game.players[0].goals) + ":" + str(game.players[1].goals), size=60, line=3, alignment="center")
 
-			graphics.createText("·" * 50, line=6, alignment="center")
+			graphics.createText("·" * 50, alignment="center")
 			graphics.createText("FPS: " + str(round(currentFps, 2)))
-			graphics.createText("Step time: " + str(round(game.simulation.stepTime, 4)))		
-			roundDigit = max(min(round(.5/gameSpeed), 3), 1)
-			graphics.createText("Game steps per frame: " + str(round(max(gameSpeed, 1), roundDigit)))
-			graphics.createText("Game speed: " + str(round((max(gameSpeed, 1)*stepTime) * currentFps, roundDigit)))
-			graphics.createText("Game time: " + str(round(game.gameTime, 2)))
-			graphics.createText("Puck speed: " + str(round(game.simulation.puck.velocity.magnitude(), 2)))
-			# graphics.createText("Puck speed: " + str(round(game.players[0].strategy.puck.speedMagnitude, 2)))
-			graphics.createText("Camera FPS: " + str(game.camera.frameRate))
-			graphics.createText("Showing game: " + str(currentGame + 1) + "/"+ str(NUMBER_OF_GAMES))
+			graphics.createText("Paused" if paused else "Running")
+			roundDigit = max(min(round(.5/animationSpeed), 3), 1)
+			graphics.createText("Animation speed: " + str(round(animationSpeed, roundDigit)))
 
-			graphics.createText(" ")
-			graphics.createText("Left player:")
-			graphics.createText("‾‾‾‾‾‾‾‾‾‾")
-			graphics.createText("Score: " + str(round(game.players[0].score, 2)))
+			graphics.createText("Game time: " + str(round(gameTime[frame], 2)))
+			graphics.createText("")
+			graphics.createText("Puck:")
+			graphics.createText("Position: " + "x: {:3.0f} y: {:3.0f}".format(*puckPos[frame]))
+			graphics.createText("Speed: " + "x: {:3.0f} y: {:3.0f}".format(*puckVel[frame]))
+			graphics.createText("Speed magnitude: " + "{:3.0f}".format(Vector2(puckVel[frame]).magnitude()))
+			graphics.createText("Predicted position: " + "x: {:3.0f} y: {:3.0f}".format(*predictedPos[frame]))
+		# 	# graphics.createText("Puck speed: " + str(round(game.players[0].strategy.puck.speedMagnitude, 2)))
+		# 	graphics.createText("Camera FPS: " + str(game.camera.frameRate))
+		# 	graphics.createText("Showing game: " + str(currentGame + 1) + "/"+ str(NUMBER_OF_GAMES))
+
+		# 	graphics.createText(" ")
+		# 	graphics.createText("Left player:")
+		# 	graphics.createText("‾‾‾‾‾‾‾‾‾‾")
+		# 	graphics.createText("Score: " + str(round(game.players[0].score, 2)))
 			
-			graphics.createText(" ")
-			if not PLAYGROUND:
-				graphics.createText("Right player:")
-				graphics.createText("‾‾‾‾‾‾‾‾‾‾‾‾")
-				graphics.createText("Score: " + str(round(game.players[1].score, 2)))
+		# 	graphics.createText(" ")
+		# 	if not PLAYGROUND:
+		# 		graphics.createText("Right player:")
+		# 		graphics.createText("‾‾‾‾‾‾‾‾‾‾‾‾")
+		# 		graphics.createText("Score: " + str(round(game.players[1].score, 2)))
 
-			graphics.createText(" ")
-			graphics.createText("Strategy:")
-			graphics.createText("‾‾‾‾‾‾‾")
-			graphics.createText(game.players[0].strategy.debugString)
-			graphics.createText("Goal line intersetion: {}".format(game.players[0].strategy.goalLineIntersection))
-			graphics.createText("Puck speed: " + str(round(game.players[0].strategy.puck.speedMagnitude, 2)))
-			graphics.createText("Puck vector: {:1.2f}, {:1.2f}".format(game.players[0].strategy.puck.vector.x, game.players[0].strategy.puck.vector.y))
-			graphics.createText("Puck angle: {:3.1f}".format(game.players[0].strategy.puck.angle))
-			graphics.createText("Dangerous puck: {}".format(game.players[0].strategy.isPuckDangerous()))
-			graphics.createText("Puck Behind: {}".format(game.players[0].strategy.isPuckBehingStriker()))
-			graphics.createText(" ")
-			# graphics.createText("Striker in good position: {}".format(game.players[0].strategy.isInGoodPosition(game.players[0].strategy.lineToGoal)))
-			graphics.createText("Striker position: {:3.0f}, {:3.0f}".format(*game.players[0].strategy.striker.position))
-			# graphics.createText("Striker velocity: {:3.0f}, {:3.0f}".format(*game.players[0].strategy.striker.velocity))
-			# graphics.createText("Striker velocity: {:3.0f}, {:3.0f}".format(*game.players[1].strategy.striker.velocity))
-			graphics.createText("Striker speed: {:5.0f}".format(game.players[0].strategy.striker.velocity.magnitude()))
-			# graphics.createText("Striker speed: {:3.0f}, {:3.0f}".format(*game.players[0].strategy.opponentStriker.position))
+		# 	graphics.createText(" ")
+		# 	graphics.createText("Strategy:")
+		# 	graphics.createText("‾‾‾‾‾‾‾")
+		# 	graphics.createText(game.players[0].strategy.debugString)
+		# 	graphics.createText("Goal line intersetion: {}".format(game.players[0].strategy.goalLineIntersection))
+		# 	graphics.createText("Puck speed: " + str(round(game.players[0].strategy.puck.speedMagnitude, 2)))
+		# 	graphics.createText("Puck vector: {:1.2f}, {:1.2f}".format(game.players[0].strategy.puck.vector.x, game.players[0].strategy.puck.vector.y))
+		# 	graphics.createText("Puck angle: {:3.1f}".format(game.players[0].strategy.puck.angle))
+		# 	graphics.createText("Dangerous puck: {}".format(game.players[0].strategy.isPuckDangerous()))
+		# 	graphics.createText("Puck Behind: {}".format(game.players[0].strategy.isPuckBehingStriker()))
+		# 	graphics.createText(" ")
+		# 	# graphics.createText("Striker in good position: {}".format(game.players[0].strategy.isInGoodPosition(game.players[0].strategy.lineToGoal)))
+		# 	graphics.createText("Striker position: {:3.0f}, {:3.0f}".format(*game.players[0].strategy.striker.position))
+		# 	# graphics.createText("Striker velocity: {:3.0f}, {:3.0f}".format(*game.players[0].strategy.striker.velocity))
+		# 	# graphics.createText("Striker velocity: {:3.0f}, {:3.0f}".format(*game.players[1].strategy.striker.velocity))
+		# 	graphics.createText("Striker speed: {:5.0f}".format(game.players[0].strategy.striker.velocity.magnitude()))
+		# 	# graphics.createText("Striker speed: {:3.0f}, {:3.0f}".format(*game.players[0].strategy.opponentStriker.position))
 
 
-			if MODE == "NE":
-				graphics.createText(" ")
-				graphics.createText("Neuroevolution:")
-				graphics.createText("‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
-				graphics.createText("Generation: " + str(population.generation))
-				if population.globalBestMember is not None:
-					graphics.createText("Best fitness: " + str(population.globalBestMember.absoluteFitness))
-				graphics.createText("Brain size: " + str(game.players[0].strategy.brain.size))
+		# 	if MODE == "NE":
+		# 		graphics.createText(" ")
+		# 		graphics.createText("Neuroevolution:")
+		# 		graphics.createText("‾‾‾‾‾‾‾‾‾‾‾‾‾‾")
+		# 		graphics.createText("Generation: " + str(population.generation))
+		# 		if population.globalBestMember is not None:
+		# 			graphics.createText("Best fitness: " + str(population.globalBestMember.absoluteFitness))
+		# 		graphics.createText("Brain size: " + str(game.players[0].strategy.brain.size))
 
-			if game.gameDone:
-				graphics.createText("Game finished", line=15, column=2, size=100, alignment="center")
-			# graphics.createText("Dangerous puck: " + str(game.players[0].strategy.isPuckDangerous()))
+		# 	if game.gameDone:
+		# 		graphics.createText("Game finished", line=15, column=2, size=100, alignment="center")
+		# 	# graphics.createText("Dangerous puck: " + str(game.players[0].strategy.isPuckDangerous()))
 			
 
 			lastTextUpdate = realTime
@@ -204,34 +228,10 @@ def main():	 # Main ------------------------------------------------------------
 		graphics.update()
 
 		# Set fps
-		clock.tick(desiredFps)
+		clock.tick(60)
 
-	if MULTIPROCESS:
-		pool.close()
-		pool.join()
 
 	pygame.quit()
-
-def allGamesFinished(games):
-	for game in games:
-		if not game.gameDone: return False
-
-	return True
-
-def createGames(population):
-	games = []
-	for i in range(NUMBER_OF_GAMES):
-		games.append(Game(MODE))
-		for player in games[i].players:
-			player.strategy.brain = population.getDistinctGenom()
-
-	return games
-
-def work(game):
-	for i in range(max(1, game.gameSpeed)):
-		game.update()	
-
-	return game
 
 if __name__ == "__main__":	
 	main()

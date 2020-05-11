@@ -22,7 +22,7 @@ STOPPING_LINE = 200
 CLOSE_DISTANCE = PUCK_RADIUS/3 # what is considered to be "close enough"
 
 # ------------- SIMULATION -------------
-MIN_STEP_TIME = 0.012
+MIN_STEP_TIME = 0.001#0.012
 PUCK_MASS = 20
 STRIKER_MASS = 700
 BORDER_RESTITUTION = 0.7
@@ -33,7 +33,7 @@ VELOCITY_DAMP = 0.995
 # -------------- MOTORS --------------
 # Striker limitations
 MAX_ACCELERATION = 30000
-MAX_DECELERATION = MAX_ACCELERATION * 4
+MAX_DECELERATION = 100000
 MAX_SPEED = 3000
 KP_GAIN = MAX_DECELERATION/(MAX_SPEED*2)
 
@@ -51,20 +51,7 @@ POINTS_PER_GOAL = 1000
 SHOT_POINT_MULTIPLIER = 1
 
 # ------------- GRAPHICS -------------
-# Color definitions
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 50, 50)
-DIMMED_RED = (120,60,60)
-YELLOW = (255, 255, 0)
-DIMMED_YELLOW = (150, 150, 0)
-GREEN = (0, 255, 50)
-BLUE = (50, 50, 255)
-GREY = (100, 100, 100)
-ORANGE = (200, 100, 50)
-CYAN = (0, 255, 255)
-MAGENTA = (255, 0, 255)
-TRANS = (1, 1, 1)
+
 
 # Scaling of the field in window
 UNITS_TO_PIXELS_SCALE = 1.2

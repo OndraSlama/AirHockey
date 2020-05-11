@@ -1,5 +1,5 @@
 from Strategy.StrategyStructs import *
-from UniTools import Filter, Line
+from UniTools import Filter, Line, oppositeSigns
 from Constants import *
 from numpy import sign
 from pygame.math import Vector2
@@ -94,8 +94,7 @@ class BaseStrategy():
 		self.calculateTrajectory()	
 
 
-	def initialCheck(self, pos):	
-
+	def initialCheck(self, pos):
 
 		currentStepVector = pos - self.puck.position
 		stepDistance = currentStepVector.magnitude()
@@ -300,8 +299,24 @@ class BaseStrategy():
 				self.striker.desiredPosition.y = sign(self.striker.desiredPosition.y) * (FIELD_HEIGHT/2 - (STRIKER_RADIUS + PUCK_RADIUS*2))
 
 	def calculateDesiredVelocity(self):
-		self.striker.desiredVelocity = self.gain*(self.striker.desiredPosition - self.striker.position)
+		# self.striker.desiredVelocity = self.gain*(self.striker.desiredPosition - self.striker.position)
+		# speedDiff = abs(self.striker.velocity.x) - abs(self.striker.velocity.y)
 
+		# maxSpeed = max(abs(self.striker.velocity.x), abs(self.striker.velocity.y), self.maxSpeed/10)
+		# xmag = max(abs(self.striker.velocity.x),self.maxSpeed/10)/maxSpeed
+		# ymag = max(abs(self.striker.velocity.y),self.maxSpeed/10)/maxSpeed
+		
+		# self.striker.desiredVelocity.x = xmag * self.gain*(self.striker.desiredPosition.x - self.striker.position.x)
+		# self.striker.desiredVelocity.y = ymag * self.gain*(self.striker.desiredPosition.y - self.striker.position.y)
+
+		self.striker.desiredVelocity.x = self.gain*(self.striker.desiredPosition.x - self.striker.position.x)
+		self.striker.desiredVelocity.y = self.gain*(self.striker.desiredPosition.y - self.striker.position.y)
+		
+		# if oppositeSigns(self.striker.desiredVelocity.x, self.striker.velocity.x):
+		# 	self.striker.desiredVelocity.x = 10 * self.gain*(self.striker.desiredPosition.x - self.striker.position.x)
+
+		# if oppositeSigns(self.striker.desiredVelocity.y, self.striker.velocity.y):		
+		# 	self.striker.desiredVelocity.y = 10 * self.gain*(self.striker.desiredPosition.y - self.striker.position.y)
 	# Checkers ------------------------------------------------------------------------------
 
 	def isOutsideLimits(self, pos):
@@ -336,6 +351,7 @@ class BaseStrategy():
 	def getPredictedPuckPosition(self, strikerPos = None, reserve=1.3):
 		if strikerPos is None: strikerPos = self.striker.desiredPosition
 		if self.puck.state == INACURATE:
+			self.predictedPosition = Vector2(self.puck.position)
 			return Vector2(self.puck.position)
 		if len(self.puck.trajectory) > 0:
 			try:
