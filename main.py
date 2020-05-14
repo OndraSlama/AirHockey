@@ -20,7 +20,7 @@ warnings.simplefilter('error')
 # vsAI = Hardcoded strategy vs player
 MODE = "vsAI"
 
-PLAYGROUND = 1
+PLAYGROUND = 0
 MULTIPROCESS = 0
 NUMBER_OF_GAMES = 35
 INVARIANT_SIMULATION = 1
@@ -265,7 +265,7 @@ def main():	 # Main ------------------------------------------------------------
 		graphics.update()
 
 		# Set fps
-		clock.tick(desiredFps)
+		clock.tick(desiredFps*1.05)
 
 	if MULTIPROCESS:
 		pool.close()

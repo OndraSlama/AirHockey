@@ -3,7 +3,7 @@ from Functions import *
 from Simulation.Simulation import Simulation
 from Game.Player import Player
 from Game.Camera import Camera
-from Strategy import StrategyA, StrategyB, StrategyC, StrategyD, NN_StrategyA
+from Strategy import StrategyA, StrategyB, StrategyC, StrategyD, NN_StrategyA, MovementTest
 from Strategy.BaseStrategy import BaseStrategy
 from pygame.math import Vector2
 
@@ -20,11 +20,15 @@ class Game():
 			self.players.append(Player(self, NN_StrategyA.NN_StrategyA(), "left"))			
 		else:
 			self.players.append(Player(self, StrategyD.StrategyD(), "left"))
+			# self.players.append(Player(self, MovementTest.MovementTest(), "left"))
+
 
 		#----------------------------- 2nd player -----------------------------
 		if not playground:
 			if mode == "vsAI" or mode == "vsNN":
-				self.players.append(Player(self, BaseStrategy(), "right"))
+				# self.players.append(Player(self, BaseStrategy(), "right"))
+				self.players.append(Player(self, MovementTest.MovementTest(), "right"))
+
 			elif mode == "NE":
 				self.players.append(Player(self, NN_StrategyA.NN_StrategyA(), "right"))
 			else:

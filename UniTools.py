@@ -358,7 +358,7 @@ class Line():
 		else:
 			return None
 
-ACTIVATE_PLOTTER = 1
+ACTIVATE_PLOTTER = 0
 class Plotter():
 	def __init__(self, linesNum = 1, lastSeconds = 3):
 		self.history = lastSeconds
