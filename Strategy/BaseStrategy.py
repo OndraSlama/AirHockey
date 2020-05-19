@@ -20,6 +20,7 @@ class BaseStrategy():
 		# Striker Limits
 		self.maxSpeed = MAX_SPEED
 		self.acceleration = MAX_ACCELERATION
+		self.deceleration = MAX_DECELERATION
 		self.gain = KP_GAIN
 
 		# Puck
@@ -359,8 +360,8 @@ class BaseStrategy():
 				dist = step.magnitude()
 
 				# Compute time, that will take striker to move to desired position
-				a = getValueInXYdir(step.x, step.y, self.acceleration).magnitude() # Acceleration in direction to desired pos
-				vm = getValueInXYdir(step.x, step.y, self.maxSpeed).magnitude() # Max velocity in direction to desired pos
+				a = getSpeedInXYdir(step.x, step.y, self.acceleration).magnitude() # Acceleration in direction to desired pos
+				vm = getSpeedInXYdir(step.x, step.y, self.maxSpeed).magnitude() # Max velocity in direction to desired pos
 				v0 = sign(self.striker.velocity.dot(step)) * (step * self.striker.velocity.dot(step) / step.dot(step)).magnitude() # Projected current velocity in direction to desired pos 
 																																	#(how fast the striker is moving in the right direction)
 				

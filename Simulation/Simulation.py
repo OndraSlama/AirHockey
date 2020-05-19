@@ -13,8 +13,8 @@ class Simulation():
 			self.boundaries = [	Vector2(CHAMBER_SIZE, 	-FIELD_HEIGHT/2),
 								Vector2(0, 				-(FIELD_HEIGHT/2-CHAMBER_SIZE)), 
 								Vector2(0, 				-GOAL_SPAN/2),
-								Vector2(-100, 			-GOAL_SPAN/2),
-								Vector2(-100,			GOAL_SPAN/2),
+								Vector2(-10000, 		-GOAL_SPAN/2),
+								Vector2(-10000,			GOAL_SPAN/2),
 								Vector2(0, 				GOAL_SPAN/2),
 								Vector2(0, 				(FIELD_HEIGHT/2-CHAMBER_SIZE)),
 								Vector2(CHAMBER_SIZE, 				FIELD_HEIGHT/2),
@@ -27,16 +27,16 @@ class Simulation():
 			self.boundaries = [	Vector2(CHAMBER_SIZE, 	-FIELD_HEIGHT/2),
 								Vector2(0, 				-(FIELD_HEIGHT/2-CHAMBER_SIZE)), 
 								Vector2(0, 				-GOAL_SPAN/2),
-								Vector2(-100, 			-GOAL_SPAN/2),
-								Vector2(-100,			GOAL_SPAN/2),
+								Vector2(-10000, 			-GOAL_SPAN/2),
+								Vector2(-10000,			GOAL_SPAN/2),
 								Vector2(0, 				GOAL_SPAN/2),
 								Vector2(0, 				(FIELD_HEIGHT/2-CHAMBER_SIZE)),
 								Vector2(CHAMBER_SIZE, 				FIELD_HEIGHT/2),
 								Vector2(FIELD_WIDTH - CHAMBER_SIZE, FIELD_HEIGHT/2),
 								Vector2(FIELD_WIDTH, 				FIELD_HEIGHT/2 - CHAMBER_SIZE),
 								Vector2(FIELD_WIDTH,  				GOAL_SPAN/2),
-								Vector2(FIELD_WIDTH + 100,  		GOAL_SPAN/2),
-								Vector2(FIELD_WIDTH + 100,  		-GOAL_SPAN/2),
+								Vector2(FIELD_WIDTH + 10000,  		GOAL_SPAN/2),
+								Vector2(FIELD_WIDTH + 10000,  		-GOAL_SPAN/2),
 								Vector2(FIELD_WIDTH,  				-GOAL_SPAN/2),
 								Vector2(FIELD_WIDTH,  				-(FIELD_HEIGHT/2-CHAMBER_SIZE)),
 								Vector2(FIELD_WIDTH - CHAMBER_SIZE, -FIELD_HEIGHT/2)
@@ -81,6 +81,6 @@ class Simulation():
 		mouse = Vector2((p2uX(mousePos[0]), p2uY(mousePos[1])))
 		self.puck.goToPosition(mouse)
 	
-	def spawnPuck(self):
-		self.puck = Puck(self, FIELD_WIDTH/2, -FIELD_HEIGHT/2, PUCK_RADIUS, PUCK_MASS)
+	def spawnPuck(self, x = FIELD_WIDTH/2, y = -FIELD_HEIGHT/2):
+		self.puck = Puck(self, x, y, PUCK_RADIUS, PUCK_MASS)
 		# self.puck.velocity = Vector2(randrange(-300, 300), randrange(300, 400))

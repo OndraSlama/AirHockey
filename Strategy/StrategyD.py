@@ -64,7 +64,7 @@ class StrategyD(BaseStrategy):
 				self.debugString = "Attacking"
 				self.lineToGoal = Line(self.predictedPosition, Vector2(FIELD_WIDTH*1.2, 0))
 				
-				if self.puck.vector.x > 0:
+				if self.puck.vector.x > -.2:
 					self.subState = ATTACK_STAND_BEHIND
 
 				elif abs(self.goalLineIntersection) < GOAL_SPAN/2 and self.puck.state == ACURATE or self.puck.speedMagnitude > 200:
@@ -87,7 +87,7 @@ class StrategyD(BaseStrategy):
 					desiredY = self.puck.position.y
 				self.setDesiredPosition(Vector2(self.puck.position.x - 4*STRIKER_RADIUS, desiredY))
 
-				if self.puck.speedMagnitude < 30 or self.puck.state == ACURATE and abs(self.puck.velocity.y) < self.maxSpeed*.8\
+				if self.puck.speedMagnitude < 100 or self.puck.state == ACURATE and abs(self.puck.velocity.y) < self.maxSpeed*.8\
 						and sign(self.puck.velocity.y)*(self.striker.position.y - self.puck.position.y) > 20:
 					self.subState = ATTACK_SHOOT
 			
@@ -270,7 +270,7 @@ class StrategyD(BaseStrategy):
 		if abs(self.puck.velocity.y) > self.maxSpeed and self.puck.vector.x < 0:
 			return True
 
-		if self.willBounce and self.puck.state == ACURATE and self.puck.vector.x < 0: # If puck is pointing at robot side and is about to bounce from sidewalls
+		if self.willBounce and self.puck.state == ACURATE and self.puck.vector.x < -.2: # If puck is pointing at robot side and is about to bounce from sidewalls
 			if len(self.puck.trajectory) > 0:
 				if self.puck.trajectory[0].getPointLineDist(self.striker.position) > PUCK_RADIUS and self.puck.trajectory[-1].getPointLineDist(self.striker.position) > PUCK_RADIUS :  # If striker is not in the way of trajectory
 					perpendicularPoint = self.puck.trajectory[0].getPerpendicularPoint(self.striker.position)				
@@ -301,7 +301,7 @@ class StrategyD(BaseStrategy):
 			return False
 
 		if not self.isPuckDangerous()\
-			and (self.getPredictedPuckPosition(Vector2(STRIKER_AREA_WIDTH, self.striker.position.y), 1).x < STRIKER_AREA_WIDTH - STRIKER_RADIUS*2 or self.puck.speedMagnitude < 100)\
+			and (self.getPredictedPuckPosition(Vector2(STRIKER_AREA_WIDTH, self.striker.position.y), 1).x < STRIKER_AREA_WIDTH - STRIKER_RADIUS*2 or self.puck.speedMagnitude < 100 or self.puck.vector.x > -.2)\
 			and self.puck.velocity.x < self.maxSpeed*.6: # (not self.isPuckOutsideLimits(self.getPredictedPuckPosition(self.puck.position)) or self.puck.vector.x > 0) 
 			return True
 

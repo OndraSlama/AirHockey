@@ -19,7 +19,7 @@ STRIKER_RADIUS = 50
 # -------------- STRATEGY --------------
 DEFENSE_LINE = STRIKER_RADIUS + PUCK_RADIUS
 STOPPING_LINE = 200
-CLOSE_DISTANCE = PUCK_RADIUS/3 # what is considered to be "close enough"
+CLOSE_DISTANCE = PUCK_RADIUS # what is considered to be "close enough"
 
 # ------------- SIMULATION -------------
 MIN_STEP_TIME = 0.008#0.012

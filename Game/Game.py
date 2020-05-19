@@ -6,6 +6,7 @@ from Game.Camera import Camera
 from Strategy import StrategyA, StrategyB, StrategyC, StrategyD, NN_StrategyA, MovementTest
 from Strategy.BaseStrategy import BaseStrategy
 from pygame.math import Vector2
+from UniTools import Scheduler
 
 class Game():
 	def __init__(self, mode, playground):
@@ -138,10 +139,12 @@ class Game():
 				self.players[1].goals += 1
 				self.players[1].score += POINTS_PER_GOAL
 				self.simulation.spawnPuck()
+				# Scheduler().schedule(self.simulation.spawnPuck, 1)
 			if self.simulation.puck.position.x > FIELD_WIDTH:
 				self.players[0].goals += 1
 				self.players[0].score += POINTS_PER_GOAL
 				self.simulation.spawnPuck()
+				# Scheduler().schedule(self.simulation.spawnPuck, 1)
 
 	def checkEnd(self):
 		goals = [self.players[0].goals, self.players[1].goals]

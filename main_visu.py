@@ -7,6 +7,7 @@ from Constants import *
 from Functions import *
 import pickle
 import json
+import pickle
 import warnings
 from datetime import datetime
 
@@ -21,31 +22,34 @@ def main():	 # Main ------------------------------------------------------------
 	clock = pygame.time.Clock()
 	graphics = AHGraphics('Air Hockey', WIDTH, HEIGHT)
 
+	with open('Recordings/Recording_2020-05-14_16-25-28.obj') as f:
+		data = pickle.load(f)
+
 	#----------------------------- Load data -----------------------------
-	with open('Recordings/Recording_2020-05-03_16-07-19.txt') as f:
-		data = json.load(f)
+	# with open('Recordings/Recording_2020-05-03_16-07-19.txt') as f:
+	# 	data = json.load(f)
 
-		#----------------------------- Temp fix for datetime fuckup -----------------------------
-		firstTime = datetime.strptime(data[0][0], "%Y-%m-%d_%H-%M-%S")
-		lastTime = datetime.strptime(data[-1][0], "%Y-%m-%d_%H-%M-%S")
-		duration = (lastTime - firstTime).seconds
-		stepTime = duration/len(data)
+	# 	#----------------------------- Temp fix for datetime fuckup -----------------------------
+	# 	firstTime = datetime.strptime(data[0][0], "%Y-%m-%d_%H-%M-%S")
+	# 	lastTime = datetime.strptime(data[-1][0], "%Y-%m-%d_%H-%M-%S")
+	# 	duration = (lastTime - firstTime).seconds
+	# 	stepTime = duration/len(data)
 		
-		addedTime = 0
-		for row in data:
-			row.insert(0,addedTime)
-			row.pop(1)
-			addedTime += stepTime
+	# 	addedTime = 0
+	# 	for row in data:
+	# 		row.insert(0,addedTime)
+	# 		row.pop(1)
+	# 		addedTime += stepTime
 
-		#----------------------------- Temp data alocation -----------------------------
-		time = [row[0] for row in data]
-		gameTime = [row[1] for row in data]
-		puckPos = [row[2] for row in data]
-		puckVel = [row[3] for row in data]
-		strikerPos = [row[4] for row in data]
-		strikerVel = [row[5] for row in data]
-		desiredPos = [row[6] for row in data]
-		predictedPos = [row[7] for row in data]
+	# 	#----------------------------- Temp data alocation -----------------------------
+	# 	time = [row[0] for row in data]
+	# 	gameTime = [row[1] for row in data]
+	# 	puckPos = [row[2] for row in data]
+	# 	puckVel = [row[3] for row in data]
+	# 	strikerPos = [row[4] for row in data]
+	# 	strikerVel = [row[5] for row in data]
+	# 	desiredPos = [row[6] for row in data]
+	# 	predictedPos = [row[7] for row in data]
 		
 
 	#----------------------------- Loop -----------------------------

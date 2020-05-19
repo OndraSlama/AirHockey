@@ -176,6 +176,28 @@ class FPSCounter():
 		# return ("Curr: " + str(round(self.currentFps, 2)) + "; Avg: " + str(round(self.averageFps, 2)) + "; Last " + self.movingAverage + ": " + str(round(self.movingAverageFps,2)))
 		return ("Curr: {0:6} Avg: {1:6} Last {2:2}: {3:6}".format(str(round(self.currentFps, 2)), str(round(self.averageFps, 2)), self.movingAverage, str(round(self.movingAverageFps,2))))
 
+#----------------------------- Gandalf's function scheduler -----------------------------
+class Scheduler():
+	def __init__(self):
+		self.stopped = True
+		self.scheduleTime = 0
+		self.scheduleFunction = lambda *args: None
+
+	def _threadFunction(self):
+		time.sleep(self.scheduleTime)
+		if not self.stopped:
+			self.scheduleFunction()
+		self.stopped = True
+
+
+	def schedule(self, function, time):
+		self.scheduleFunction = function
+		self.scheduleTime = time
+		self.stopped = False
+		Thread(target=self._threadFunction, args=()).start()
+		return self
+
+
 #----------------------------- Gandalf's function repeater -----------------------------
 class Repeater():
 	def __init__(self, repeatFunction, every = 0.3, passStepTime = False):
@@ -582,27 +604,29 @@ def toVector(vector, roundDigit = 0):
 		return Vector2(round(vector[0], roundDigit), round(vector[1], roundDigit))
 
 if __name__ == "__main__":
-	plotter = Plotter(linesNum=2)
-	time.sleep(.4)
-	plotter.addData([1, .5])
-	plotter.addData([1, 1])
-	time.sleep(.4)
-	plotter.addData([1, .4])
-	time.sleep(.4)
-	plotter.addData([1, 2])
-	time.sleep(.01)
-	plotter.addData([1, -1])
-	time.sleep(.01)
-	plotter.addData([1, .5])
-	plotter.addData([1, 1])
-	time.sleep(.01)
-	plotter.addData([1, .01])
-	time.sleep(.01)
-	plotter.addData([1, 2])
-	for i in range(100):
-		time.sleep(.01)
-		plotter.addData([i/10])
-	for i in range(100):
-		time.sleep(.01)
-		plotter.addData([-i/10])
-	print(plotter.xData)
+	# plotter = Plotter(linesNum=2)
+	# time.sleep(.4)
+	# plotter.addData([1, .5])
+	# plotter.addData([1, 1])
+	# time.sleep(.4)
+	# plotter.addData([1, .4])
+	# time.sleep(.4)
+	# plotter.addData([1, 2])
+	# time.sleep(.01)
+	# plotter.addData([1, -1])
+	# time.sleep(.01)
+	# plotter.addData([1, .5])
+	# plotter.addData([1, 1])
+	# time.sleep(.01)
+	# plotter.addData([1, .01])
+	# time.sleep(.01)
+	# plotter.addData([1, 2])
+	# for i in range(100):
+	# 	time.sleep(.01)
+	# 	plotter.addData([i/10])
+	# for i in range(100):
+	# 	time.sleep(.01)
+	# 	plotter.addData([-i/10])
+	# print(plotter.xData)
+	scheduler = Scheduler().schedule(lambda *args: print("ahoj"), 1)
+	time.sleep(2)

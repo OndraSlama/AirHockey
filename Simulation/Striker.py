@@ -1,7 +1,7 @@
 from Simulation.Body import Body
 from Constants import *
 from pygame.math import Vector2
-from Functions import getValueInXYdir, getAccelInXYdir, getSpeedInXYdir
+from Functions import getAccelInXYdir, getSpeedInXYdir
 from UniTools import Plotter
 # from numpy import sign
 
