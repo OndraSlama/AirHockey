@@ -8,6 +8,7 @@ from Functions import *
 class BaseStrategy():
 	def __init__(self):
 		self.description = "Strategy with no gameplay mechanics."
+		
 		# DEBUG
 		self.debugLines = []
 		self.debugPoints = []
@@ -297,8 +298,8 @@ class BaseStrategy():
 			self.striker.desiredPosition.x = XLIMIT
 
 		# Check if near corner
-		if self.striker.desiredPosition.x < XLIMIT + STRIKER_RADIUS:
-			if abs(self.striker.desiredPosition.y) > FIELD_HEIGHT/2 - (STRIKER_RADIUS + PUCK_RADIUS*2):
+		if self.striker.desiredPosition.x < CORNER_SAFEGUARD_X:
+			if abs(self.striker.desiredPosition.y) > FIELD_HEIGHT/2 - CORNER_SAFEGUARD_Y:
 				self.striker.desiredPosition.y = sign(self.striker.desiredPosition.y) * (FIELD_HEIGHT/2 - (STRIKER_RADIUS + PUCK_RADIUS*2))
 
 	def calculateDesiredVelocity(self):
