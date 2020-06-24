@@ -30,10 +30,6 @@ class StrategyB(BaseStrategy):
 		if self.isPuckBehingStriker(pos) and self.puck.speedMagnitude > 100:			
 			self.defendGoalLastLine()
 
-		self.moveIfStuck()
-
-		self.limitMovement()
-
 
 		
 		

@@ -8,9 +8,9 @@ GOAL_SPAN = 240
 CHAMBER_SIZE = 30 # on both size - eg: 30 = 30mm x 30mm
 
 # Limits
-YLIMIT = 230
-XLIMIT = 70
-STRIKER_AREA_WIDTH = 450
+YLIMIT = 190
+XLIMIT = 65
+STRIKER_AREA_WIDTH = 446
 
 # Objects sizes in game units
 PUCK_RADIUS = 32

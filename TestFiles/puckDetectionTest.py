@@ -6,12 +6,12 @@ import random
 rg = 0
 bg = 0
 
-frame = cv2.imread("puckdetection2.png")
+frame = cv2.imread("puckdetection.png")
 frame = cv2.GaussianBlur(frame, (11, 11), 0)
 
 vectorized = frame.reshape((-1,3)).astype("float32")
 
-K = 4
+K = 5
 attempts = 10
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
 ret,label,center = cv2.kmeans(vectorized,K,None,criteria,attempts,cv2.KMEANS_PP_CENTERS)
@@ -41,10 +41,16 @@ if lowerLimit[0] > higherLimit[0]:
 	mask1 = cv2.inRange(frame, lowerLimit1, higherLimit1)
 	mask2 = cv2.inRange(frame, lowerLimit2, higherLimit2)
 
+	# Now convert back into uint8, and make original image
+# center = np.uint8(center)
+# res = center[label.flatten()]
+# res2 = res.reshape((img.shape))
+
 
 result_mask = (labels == mostFrequentLabel).reshape(frame.shape[0], frame.shape[1]).astype("uint8")
-result_image = center[labels].reshape(frame.shape)
+result_image = np.uint8(center[labels].reshape(frame.shape))
 result_image = cv2.bitwise_and(result_image, result_image, mask=result_mask)
+
 
 
 figure_size = 15

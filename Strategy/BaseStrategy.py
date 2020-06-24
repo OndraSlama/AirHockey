@@ -69,6 +69,8 @@ class BaseStrategy():
 
 		self.stepTick(stepTime)
 		self._process()
+		self.moveIfStuck()
+		
 		self.limitMovement()
 		self.calculateDesiredVelocity()
 		

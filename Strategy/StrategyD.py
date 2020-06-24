@@ -54,7 +54,7 @@ class StrategyD(BaseStrategy):
 				self.defendGoalDefault() 
 
 		elif case(ATTACK):
-			if self.puck.velocity.x > self.maxSpeed*0.7 or self.getPredictedPuckPosition(self.puck.position).x > STRIKER_AREA_WIDTH:
+			if self.puck.velocity.x > self.maxSpeed*0.8 or self.getPredictedPuckPosition(self.puck.position).x > STRIKER_AREA_WIDTH:
 				self.subState = WAITING
 				self.state = DEFEND
 						
@@ -206,9 +206,7 @@ class StrategyD(BaseStrategy):
 			self.subState = WAITING
 			self.state = DEFEND
 
-		self.moveIfStuck()
 
-		
 
 	# Other functions
 
@@ -301,7 +299,8 @@ class StrategyD(BaseStrategy):
 			return False
 
 		if not self.isPuckDangerous()\
-			and (self.getPredictedPuckPosition(Vector2(STRIKER_AREA_WIDTH, self.striker.position.y), 1).x < STRIKER_AREA_WIDTH - STRIKER_RADIUS*2 or self.puck.speedMagnitude < 100 or self.puck.vector.x > -.2)\
+			and (self.getPredictedPuckPosition(Vector2(STRIKER_AREA_WIDTH, self.striker.position.y), 1).x < STRIKER_AREA_WIDTH - STRIKER_RADIUS*2\
+				or ((self.puck.speedMagnitude < 100 or self.puck.vector.x > -.2) and self.puck.position.x < STRIKER_AREA_WIDTH))\
 			and self.puck.velocity.x < self.maxSpeed*.6: # (not self.isPuckOutsideLimits(self.getPredictedPuckPosition(self.puck.position)) or self.puck.vector.x > 0) 
 			return True
 

@@ -176,7 +176,7 @@ class Camera():
 
 				if secondLeft == 0:
 					print("Saving found color...")
-					self._determineColorIntervals()
+					self.-()
 					break
 
 		# cv2.destroyWindow("Analyzing")
@@ -250,7 +250,7 @@ class Camera():
 					cnts = imutils.grab_contours(cnts)
 					center = None
 
-					# only proceed if at least one contour was found
+					# only proceed if at least one contour was foundw
 					if len(cnts) > 0:
 						# find the largest contour in the mask, then use it to compute the minimum enclosing circle and centroid
 						c = max(cnts, key=cv2.contourArea)
@@ -389,7 +389,7 @@ class Camera():
 
 		self._createTransformMatrices(self.fieldCorners)		
 
-	def _determineColorIntervals(self):
+	def -(self):
 		hueInterval = 30
 		othersInterval = 150
 

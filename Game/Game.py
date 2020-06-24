@@ -27,8 +27,8 @@ class Game():
 		#----------------------------- 2nd player -----------------------------
 		if not playground:
 			if mode == "vsAI" or mode == "vsNN":
-				# self.players.append(Player(self, BaseStrategy(), "right"))
-				self.players.append(Player(self, MovementTest.MovementTest(), "right"))
+				self.players.append(Player(self, StrategyC.StrategyC(), "right"))
+				# self.players.append(Player(self, MovementTest.MovementTest(), "right"))
 
 			elif mode == "NE":
 				self.players.append(Player(self, NN_StrategyA.NN_StrategyA(), "right"))

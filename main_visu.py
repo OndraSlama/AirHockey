@@ -10,6 +10,7 @@ import json
 import pickle
 import warnings
 from datetime import datetime
+import cv2
 
 warnings.simplefilter('error')
 
@@ -22,25 +23,27 @@ def main():	 # Main ------------------------------------------------------------
 	clock = pygame.time.Clock()
 	graphics = AHGraphics('Air Hockey', WIDTH, HEIGHT)
 
-	with open('Recordings/Recording_2020-05-14_16-25-28.obj') as f:
+	#----------------------------- Load data -----------------------------
+	with open('Recordings/CameraRecordings/Recording_2020-06-19_15-48-47.obj', 'rb') as f:
 		data = pickle.load(f)
 
-	#----------------------------- Load data -----------------------------
-	# with open('Recordings/Recording_2020-05-03_16-07-19.txt') as f:
-	# 	data = json.load(f)
+	#----------------------------- Frames -----------------------------
+	surfaces = []
+	for row in data:
 
-	# 	#----------------------------- Temp fix for datetime fuckup -----------------------------
-	# 	firstTime = datetime.strptime(data[0][0], "%Y-%m-%d_%H-%M-%S")
-	# 	lastTime = datetime.strptime(data[-1][0], "%Y-%m-%d_%H-%M-%S")
-	# 	duration = (lastTime - firstTime).seconds
-	# 	stepTime = duration/len(data)
+		temp = row["frame"]		
+		# frame = cv2.perspectiveTransform(row["frame"], row["p2u"])
+		if temp is not None:		
+			temp = pygame.surfarray.make_surface(temp)
+			temp = pygame.transform.rotate(temp, 90)			
+			temp = pygame.transform.scale(temp, (FIELD_PIXEL_WIDTH + 100, FIELD_PIXEL_HEIGHT))
 		
-	# 	addedTime = 0
-	# 	for row in data:
-	# 		row.insert(0,addedTime)
-	# 		row.pop(1)
-	# 		addedTime += stepTime
+		surfaces.append(temp)
 
+	#----------------------------- Time fix -----------------------------
+	startTime = data[0]["time"]
+	for i in range(len(data)):
+		data[i]["time"] = data[i]["time"] - startTime
 	# 	#----------------------------- Temp data alocation -----------------------------
 	# 	time = [row[0] for row in data]
 	# 	gameTime = [row[1] for row in data]
@@ -81,7 +84,7 @@ def main():	 # Main ------------------------------------------------------------
 				if event.button == 4: animationSpeed *= 1.2
 				if event.button == 5: animationSpeed *= 1/1.2
 
-				timeReference = absoluteTime - time[frame]/animationSpeed
+				timeReference = absoluteTime - data[frame]["time"]/animationSpeed
 				#     pass
 
 			if event.type == pygame.MOUSEBUTTONUP:
@@ -91,16 +94,24 @@ def main():	 # Main ------------------------------------------------------------
 			if event.type == pygame.MOUSEMOTION:
 				if mouseDown:
 					mousePos = pygame.mouse.get_pos()
-					frame = referenceFrame + round((mousePos[0] - referenceMousePos[0]) / 1210 * len(time))
-					if frame >= len(time): frame = len(time) - 1
+					frame = referenceFrame + round((mousePos[0] - referenceMousePos[0]) / 1210 * len(data))
+					if frame >= len(data): frame = len(data) - 1
 					if frame < 0: frame = 0
 
-					timeReference = absoluteTime - time[frame]/animationSpeed
+					timeReference = absoluteTime - data[frame]["time"]/animationSpeed
 
 
-			if event.type == pygame.KEYDOWN:                           
-				if event.key == pygame.K_LEFT: 
-					pass               
+			if event.type == pygame.KEYDOWN:   
+				paused = True
+
+				if event.key == pygame.K_LEFT: 	
+					frame -= 1		     
+                       
+				if event.key == pygame.K_RIGHT: 
+					frame += 1	   
+					
+				if frame >= len(data): frame = len(data) - 1
+				if frame < 0: frame = 0  
 
 		keys = pygame.key.get_pressed()  # currently pressed keys
 			
@@ -112,48 +123,58 @@ def main():	 # Main ------------------------------------------------------------
 		currentFps = clock.get_fps()
 		absoluteTime = pygame.time.get_ticks()/1000
 		relativeTime = absoluteTime - timeReference
-		while relativeTime * animationSpeed > time[frame]:
+		while relativeTime * animationSpeed > data[frame]["time"]:
 			if not paused: 
 				frame += 1
 			else:
-				timeReference = absoluteTime - time[frame]/animationSpeed
+				timeReference = absoluteTime - data[frame]["time"]/animationSpeed
 				break     
 		
-			if frame >= len(time): 
+			if frame >= len(data): 
 				frame = 0
 				timeReference = absoluteTime
 				break
 		
 
 	# ------------------- GRAPHICS ------------------------
-		graphics.drawBackgrond()
+		graphics.drawBackgrond()		
 
 		# Draw game 
 		graphics.drawField()
-		graphics.drawPuck(puckPos[frame])
+
+		#----------------------------- Camera -----------------------------
+		if surfaces[frame] is not None:
+			graphics.window.blit(surfaces[frame], (320, 5))
+
+		graphics.drawPuck(data[frame]["puckPos"])
 		# graphics.drawCamera(game.camera.puckPosition)
-		graphics.drawHistory(puckPos[max(frame - historyLength, 0):frame])
+		graphics.drawHistory([row["puckPos"] for row in data[max(frame - historyLength, 0):frame]])
 
 		# for striker in game.simulation.strikers:
-		graphics.drawStriker(strikerPos[frame], GREY)
+		graphics.drawStriker(data[frame]["strikerPos"], GREY)
 
 		# draw desired position
-		graphics.drawCircle(desiredPos[frame], STRIKER_RADIUS/10, GREEN)
-		graphics.drawLine(strikerPos[frame], desiredPos[frame], GREEN)
+		graphics.drawCircle(data[frame]["desiredPos"], STRIKER_RADIUS/10, GREEN)
+		graphics.drawLine(data[frame]["strikerPos"], data[frame]["desiredPos"], GREEN)
 		
 		# draw predicted
-		graphics.drawCircle(predictedPos[frame], STRIKER_RADIUS/10, YELLOW)
-		graphics.drawLine(puckPos[frame], predictedPos[frame], YELLOW)
+		graphics.drawCircle(data[frame]["predictedPos"], STRIKER_RADIUS/10, YELLOW)
+		graphics.drawLine(data[frame]["puckPos"], data[frame]["predictedPos"], YELLOW)
 
 		# draw line to goal
-		graphics.drawLine(puckPos[frame], [0,0], YELLOW)
+		graphics.drawLine(data[frame]["puckPos"], [0,0], ORANGE)
 		
-		# draw line to goal
-		graphics.drawLine(puckPos[frame], [0,0], YELLOW)
+		# draw trajectory
+		for line in data[frame]["trajectory"]:
+			graphics.drawLine(line.start, line.end, RED)
+		
 
-		graphics.drawSlider(frame/len(time), [10, 720, 360, 15])
+
+		graphics.drawSlider(frame/len(data), [10, 720, 360, 15])
 			
 		# graphics.drawStrategy(game.players[0].strategy)
+
+
 
 		# Render text
 		if realTime - lastTextUpdate > 250:
@@ -171,13 +192,16 @@ def main():	 # Main ------------------------------------------------------------
 			roundDigit = max(min(round(.5/animationSpeed), 3), 1)
 			graphics.createText("Animation speed: " + str(round(animationSpeed, roundDigit)))
 
-			graphics.createText("Game time: " + str(round(gameTime[frame], 2)))
+			# graphics.createText("Game time: " + str(round(data[frame]["gameTime"], 2)))
+			graphics.createText("Recording time: " + str(round(data[frame]["time"], 2)))
 			graphics.createText("")
 			graphics.createText("Puck:")
-			graphics.createText("Position: " + "x: {:3.0f} y: {:3.0f}".format(*puckPos[frame]))
-			graphics.createText("Speed: " + "x: {:3.0f} y: {:3.0f}".format(*puckVel[frame]))
-			graphics.createText("Speed magnitude: " + "{:3.0f}".format(Vector2(puckVel[frame]).magnitude()))
-			graphics.createText("Predicted position: " + "x: {:3.0f} y: {:3.0f}".format(*predictedPos[frame]))
+			graphics.createText("Position: " + "x: {:3.0f} y: {:3.0f}".format(*data[frame]["puckPos"]))
+			graphics.createText("Speed: " + "x: {:3.0f} y: {:3.0f}".format(*data[frame]["puckVel"]))
+			graphics.createText("Speed magnitude: " + "{:3.0f}".format(Vector2(data[frame]["puckVel"]).magnitude()))
+			graphics.createText("Predicted position: " + "x: {:3.0f} y: {:3.0f}".format(*data[frame]["predictedPos"]))
+
+			graphics.createText("Frame: " + "{:4.0f} / {:4.0f}".format(frame, len(data)))
 		# 	# graphics.createText("Puck speed: " + str(round(game.players[0].strategy.puck.speedMagnitude, 2)))
 		# 	graphics.createText("Camera FPS: " + str(game.camera.frameRate))
 		# 	graphics.createText("Showing game: " + str(currentGame + 1) + "/"+ str(NUMBER_OF_GAMES))
@@ -226,7 +250,7 @@ def main():	 # Main ------------------------------------------------------------
 		# 	# graphics.createText("Dangerous puck: " + str(game.players[0].strategy.isPuckDangerous()))
 			
 
-			lastTextUpdate = realTime
+			# lastTextUpdate = realTime			
 		
 		# Update graphics (blit everything to screen)
 		graphics.update()

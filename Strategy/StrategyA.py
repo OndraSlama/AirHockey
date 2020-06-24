@@ -78,10 +78,6 @@ class StrategyA(BaseStrategy):
 		else:
 			pass
 
-		self.moveIfStuck()
-
-		self.limitMovement()
-
 	
 
 		

@@ -104,9 +104,6 @@ class StrategyC(BaseStrategy):
 			self.subState = WAITING
 			self.state = DEFEND
 
-		self.moveIfStuck()
-
-
 
 	# Other functions
 

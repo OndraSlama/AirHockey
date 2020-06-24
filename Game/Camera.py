@@ -48,8 +48,8 @@ class Camera():
 
 	def capturePuck(self):
 		self.puckPosition = Vector2(self.game.simulation.puck.position)
-		self.puckPosition.x += gauss(0, 2)
-		self.puckPosition.y += gauss(0, 2)
+		self.puckPosition.x += gauss(0, 5)
+		self.puckPosition.y += gauss(0, 5)
 
 		self.blockView()
 		self.discretize()	
