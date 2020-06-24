@@ -1,5 +1,9 @@
 from math import floor
 
+# ----------- ENUM -------------
+AI = 0
+HUMAN = 1
+
 # ------------- DIMENSIONS -------------
 # Field dimensions in game units
 FIELD_WIDTH = 1000
@@ -8,7 +12,7 @@ GOAL_SPAN = 240
 CHAMBER_SIZE = 30 # on both size - eg: 30 = 30mm x 30mm
 
 # Limits
-YLIMIT = 190
+YLIMIT = 230
 XLIMIT = 65
 STRIKER_AREA_WIDTH = 446
 
@@ -21,6 +25,24 @@ DEFENSE_LINE = STRIKER_RADIUS + PUCK_RADIUS
 STOPPING_LINE = 200
 CLOSE_DISTANCE = PUCK_RADIUS # what is considered to be "close enough"
 
+# -------------- MOTORS --------------
+# Striker limitations
+MAX_ACCELERATION = 30000
+MAX_DECELERATION = 100000
+MAX_SPEED = 3000
+KP_GAIN = MAX_DECELERATION/(MAX_SPEED*2)
+
+# -------------- Data collector --------------
+CLIP_LENGTH = 5 #seconds
+CLIP_BEFORE_AFTER_RATIO = 8/10 # cant be zero
+CLIP_FRAMERATE = 15
+
+
+#----------------------------- ONLY FOR AIRHOCKEY SIMULATION -----------------------------
+#  ||																				 ||
+#  \/																				 \/
+
+
 # ------------- SIMULATION -------------
 MIN_STEP_TIME = 0.008#0.012
 PUCK_MASS = 20
@@ -29,13 +51,6 @@ BORDER_RESTITUTION = 0.7
 STRIKER_RESTITUTION = 0.6
 FRICTION_MAG = 100
 VELOCITY_DAMP = 0.995
-
-# -------------- MOTORS --------------
-# Striker limitations
-MAX_ACCELERATION = 30000
-MAX_DECELERATION = 100000
-MAX_SPEED = 3000
-KP_GAIN = MAX_DECELERATION/(MAX_SPEED*2)
 
 # -------------- RULES --------------
 GOAL_LIMIT = 3
@@ -51,7 +66,6 @@ POINTS_PER_GOAL = 1000
 SHOT_POINT_MULTIPLIER = 1
 
 # ------------- GRAPHICS -------------
-
 
 # Scaling of the field in window
 UNITS_TO_PIXELS_SCALE = 1.2
