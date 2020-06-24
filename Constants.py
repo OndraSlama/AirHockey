@@ -1,3 +1,14 @@
+# ****************************************************************************** #
+# Author: Ondrej Slama
+# -------------------
+
+# Zdrojovy kod vytvoreny v ramci projektu robotickeho vzdusneho hokeje - diplomova prace
+#  na VUT FSI ustavu automatizace a informatiky v Brne.
+
+# Source code created as a part of robotic air hockey table project - Diploma thesis
+# at BUT FME institute of automation and computer sience.
+
+# ****************************************************************************** #
 from math import floor
 
 # ----------- ENUM -------------
@@ -55,6 +66,17 @@ STRIKER_RESTITUTION = 0.6
 FRICTION_MAG = 100
 VELOCITY_DAMP = 0.995
 
+# ****************************************************************************** #
+# Author: Ondrej Slama
+# -------------------
+
+# Zdrojovy kod vytvoreny v ramci projektu robotickeho vzdusneho hokeje - diplomova prace
+#  na VUT FSI ustavu automatizace a informatiky v Brne.
+
+# Source code created as a part of robotic air hockey table project - Diploma thesis
+# at BUT FME institute of automation and computer sience.
+
+# ****************************************************************************** #
 # -------------- RULES --------------
 GOAL_LIMIT = 3
 TIME_LIMIT = 120 #seconds
