@@ -314,6 +314,12 @@ class BaseStrategy():
 			if abs(self.striker.desiredPosition.y) > FIELD_HEIGHT/2 - CORNER_SAFEGUARD_Y:
 				self.striker.desiredPosition.y = sign(self.striker.desiredPosition.y) * (FIELD_HEIGHT/2 - (STRIKER_RADIUS + PUCK_RADIUS*2))
 
+		# Check if near goal
+		if GOAL_SPAN/2 - GOAL_CORNER_SAFEGUARD_Y < abs(self.striker.desiredPosition.y) < GOAL_SPAN/2:
+			if self.striker.desiredPosition.x < GOAL_CORNER_SAFEGUARD_X:
+				self.striker.desiredPosition.x = GOAL_CORNER_SAFEGUARD_X
+
+
 	def calculateDesiredVelocity(self):
 		# self.striker.desiredVelocity = self.gain*(self.striker.desiredPosition - self.striker.position)
 		# speedDiff = abs(self.striker.velocity.x) - abs(self.striker.velocity.y)
