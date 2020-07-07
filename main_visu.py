@@ -35,7 +35,7 @@ def main():	 # Main ------------------------------------------------------------
 	graphics = AHGraphics('Air Hockey', WIDTH, HEIGHT)
 
 	#----------------------------- Load data -----------------------------
-	with open('Recordings/CameraRecordings/Recording_2020-06-19_15-48-47.obj', 'rb') as f:
+	with open('Recordings/Recording_2020-07-01_18-05-40.obj', 'rb') as f:
 		data = pickle.load(f)
 
 	#----------------------------- Frames -----------------------------

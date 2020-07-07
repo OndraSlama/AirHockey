@@ -232,6 +232,10 @@ class BaseStrategy():
 			stepVector = pos - self.puckHistory[self.firstUsefull].position
 			self.puck.velocity = stepVector / self.puckHistory[self.firstUsefull].timeSinceCaptured
 
+			if self.puck.velocity.x == 0 and self.puck.velocity.y == 0:
+				self.puck.timeSinceCaptured = 0
+				return
+
 			# Filter velocity and normal vector
 			(r, fi) = self.puck.velocity.as_polar()
 			fi = self.angleFilter.filterData(fi, cyclic=360)
@@ -240,7 +244,6 @@ class BaseStrategy():
 			# print(fi)
 			# print(r)
 			# self.puck.velocity = self.velocityFilter.filterData(self.puck.velocity)
-
 			self.puck.vector = self.puck.velocity.normalize()
 			self.puck.speedMagnitude = r
 			self.puck.angle = fi if fi > 0 else 360 - abs(fi)

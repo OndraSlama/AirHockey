@@ -27,7 +27,7 @@ class AHGraphics(Graphics):
 
 	def drawField(self):
 		rect = [0, FIELD_HEIGHT/2, FIELD_WIDTH, FIELD_HEIGHT]
-		self.drawRect(rect, [el * 1.8 for el in GREY])
+		self.drawRect(rect, WHITE)#[el * 1.8 for el in GREY])
 		self.drawRect(rect, GREY, 4)
 
 		# leftGoalCoords = [u2pX(0), u2pY(GOAL_SPAN/2), u2pX(0), u2pY(-GOAL_SPAN/2)]
@@ -38,9 +38,9 @@ class AHGraphics(Graphics):
 		self.drawLine((FIELD_WIDTH, GOAL_SPAN/2), (FIELD_WIDTH, -GOAL_SPAN/2), WHITE,  5)
 
 		# pygame.gfxdraw.aacircle(self.window, u2pX(FIELD_WIDTH/2), u2pY(0), u2pDist(50), GREY)
-		self.drawCircle((FIELD_WIDTH/2, 0), 50, GREY, 1)
-		self.drawLine((STRIKER_AREA_WIDTH, FIELD_HEIGHT/2), (STRIKER_AREA_WIDTH, -FIELD_HEIGHT/2), GREY)
-		self.drawLine((FIELD_WIDTH - STRIKER_AREA_WIDTH, FIELD_HEIGHT/2), (FIELD_WIDTH - STRIKER_AREA_WIDTH, -FIELD_HEIGHT/2), GREY)
+		self.drawCircle((FIELD_WIDTH/2, 0), 50, LIGHT_GREY, 1)
+		self.drawLine((STRIKER_AREA_WIDTH, FIELD_HEIGHT/2), (STRIKER_AREA_WIDTH, -FIELD_HEIGHT/2), LIGHT_GREY)
+		self.drawLine((FIELD_WIDTH - STRIKER_AREA_WIDTH, FIELD_HEIGHT/2), (FIELD_WIDTH - STRIKER_AREA_WIDTH, -FIELD_HEIGHT/2), LIGHT_GREY)
 
 		# Field chamber
 		self.drawPolygon(((0, FIELD_HEIGHT/2), (0, FIELD_HEIGHT/2 - CHAMBER_SIZE), (CHAMBER_SIZE, FIELD_HEIGHT/2)),                                      GREY)
@@ -50,8 +50,8 @@ class AHGraphics(Graphics):
 	
 
 	def drawCamera(self, pos):
-		self.drawLine((0, pos.y), (FIELD_WIDTH, pos.y), DIMMED_RED)
-		self.drawLine((pos.x, FIELD_HEIGHT/2), (pos.x, -FIELD_HEIGHT/2), DIMMED_RED)
+		self.drawLine((0, pos.y), (FIELD_WIDTH, pos.y), LIGHT_RED)
+		self.drawLine((pos.x, FIELD_HEIGHT/2), (pos.x, -FIELD_HEIGHT/2), LIGHT_RED)
 		self.drawCircle((pos.x, pos.y), PUCK_RADIUS, RED, 1)
 		# pygame.gfxdraw.aacircle(self.window, u2pX(pos.x), u2pY(pos.y), u2pDist(PUCK_RADIUS), RED)
 
